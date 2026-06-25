@@ -1,0 +1,28 @@
+# Virtual Environment
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution
+build/
+dist/
+*.egg-info/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Generated Reports
+reports/
+
+# Uploaded Files
+uploads/
+
+# OS Files
+.DS_Store
+Thumbs.db
