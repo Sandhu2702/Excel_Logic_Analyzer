@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict
+from openpyxl import load_workbook
+from openpyxl.workbook import Workbook
 
 import pandas as pd
 
@@ -24,6 +26,7 @@ class WorkbookData:
 
     # Dictionary containing metadata of each sheet
     metadata: Dict[str, dict] = field(default_factory=dict)
+    workbook: Workbook | None = None
 
 # Excel Reader-------------------------------------->
 
@@ -78,6 +81,10 @@ class ExcelReader:
         self.validate_file(file_path)
 
         excel_file = pd.ExcelFile(file_path)
+        openpyxl_workbook = load_workbook(
+           file_path,
+           data_only=False
+        )
 
         sheets = {}
         metadata = {}
@@ -105,6 +112,7 @@ class ExcelReader:
 
             sheets=sheets,
 
-            metadata=metadata
-
+            metadata=metadata,
+            
+            workbook=openpyxl_workbook
         )
