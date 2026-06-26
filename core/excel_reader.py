@@ -1,13 +1,12 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict
+from openpyxl import load_workbook
+from openpyxl.workbook import Workbook
 
 import pandas as pd
 
-
-# ==========================================================
-# Workbook Data Model
-# ==========================================================
+# Workbook Data Model----------------------->
 
 @dataclass
 class WorkbookData:
@@ -20,18 +19,16 @@ class WorkbookData:
     sheet_count: int
     sheet_names: list[str]
 
-    # Dictionary:
+    # Dictionary:------------------------->
     # Key   -> Sheet Name
     # Value -> DataFrame
     sheets: Dict[str, pd.DataFrame] = field(default_factory=dict)
 
     # Dictionary containing metadata of each sheet
     metadata: Dict[str, dict] = field(default_factory=dict)
+    workbook: Workbook | None = None
 
-
-# ==========================================================
-# Excel Reader
-# ==========================================================
+# Excel Reader-------------------------------------->
 
 class ExcelReader:
     """
@@ -40,9 +37,8 @@ class ExcelReader:
 
     SUPPORTED_EXTENSIONS = (".xlsx", ".xls")
 
-    # ------------------------------------------------------
-    # Validate Excel File
-    # ------------------------------------------------------
+    # Validate Excel File--------------------------->
+
     def validate_file(self, file_path: str) -> None:
 
         path = Path(file_path)
@@ -55,9 +51,8 @@ class ExcelReader:
                 "Only .xlsx and .xls files are supported."
             )
 
-    # ------------------------------------------------------
-    # Extract Metadata
-    # ------------------------------------------------------
+    # Extract Metadata-------------------------------->
+
     def extract_metadata(
         self,
         dataframe: pd.DataFrame
@@ -79,14 +74,17 @@ class ExcelReader:
 
         }
 
-    # ------------------------------------------------------
-    # Read Workbook
-    # ------------------------------------------------------
+    # Read Workbook----------------------------------------->
+    
     def read(self, file_path: str) -> WorkbookData:
 
         self.validate_file(file_path)
 
         excel_file = pd.ExcelFile(file_path)
+        openpyxl_workbook = load_workbook(
+           file_path,
+           data_only=False
+        )
 
         sheets = {}
         metadata = {}
@@ -114,6 +112,7 @@ class ExcelReader:
 
             sheets=sheets,
 
-            metadata=metadata
-
+            metadata=metadata,
+            
+            workbook=openpyxl_workbook
         )
