@@ -8,7 +8,6 @@ Its responsibility is only to normalize and standardize
 column names across worksheets.
 """
 
-
 import re
 
 
@@ -71,56 +70,112 @@ class ColumnMapper:
         "birth date": "date_of_birth",
     }
 
-    def __init__(self, workbook_profile):
+    def __init__(self, source_profile: dict, target_profile: dict):
         """
         Parameters
         ----------
-        workbook_profile : dict
-            Output produced by WorkbookAnalyzer.analyze()
+        source_profile : dict
+            Output from WorkbookAnalyzer.analyze() for source workbook.
+
+        target_profile : dict
+            Output from WorkbookAnalyzer.analyze() for target workbook.
         """
-        self.profile = workbook_profile
+
+        self.source_profile = source_profile
+        self.target_profile = target_profile
+
+    # --------------------------------------------------
+    # Public Method
+    # --------------------------------------------------
 
     def map_columns(self):
         """
-        Standardize column names for every worksheet.
-
-        Returns
-        -------
-        dict
+        Compare standardized columns between
+        source and target workbooks.
         """
 
-        mapped_workbook = {}
+        source_headers = self._standardize_workbook(self.source_profile)
+        target_headers = self._standardize_workbook(self.target_profile)
 
-        sheets = self.profile.get("worksheets", {})
+        mappings = []
 
-        for sheet_name, sheet_info in sheets.items():
-            mapped_workbook[sheet_name] = self._map_sheet(sheet_info)
+        for source_sheet, source_cols in source_headers.items():
 
-        return mapped_workbook
+            for target_sheet, target_cols in target_headers.items():
+
+                for source_original, source_std in source_cols.items():
+
+                    for target_original, target_std in target_cols.items():
+
+                        if source_std == target_std:
+
+                            mappings.append({
+
+                                "source_sheet": source_sheet,
+                                "source_column": source_original,
+
+                                "target_sheet": target_sheet,
+                                "target_column": target_original,
+
+                                "standard_name": source_std
+
+                            })
+
+        return mappings
+
+    # --------------------------------------------------
+    # Workbook Standardization
+    # --------------------------------------------------
+
+    def _standardize_workbook(self, profile):
+        """
+        Standardize every worksheet in a workbook.
+        """
+
+        standardized = {}
+
+        sheets = profile.get("sheets", [])
+
+        for sheet in sheets:
+
+            sheet_name = sheet["sheet_name"]
+
+            standardized[sheet_name] = self._map_sheet(sheet)
+
+        return standardized
+
+    # --------------------------------------------------
+    # Sheet Standardization
+    # --------------------------------------------------
 
     def _map_sheet(self, sheet_info):
         """
-        Map every header in a worksheet.
+        Standardize every column header
+        inside one worksheet.
         """
 
         mapping = {}
 
-        headers = sheet_info.get("headers", [])
+        columns = sheet_info.get("columns", [])
 
-        for header in headers:
+        for column in columns:
+
+            header = column["column_name"]
 
             if self._is_empty(header):
                 continue
 
-            standardized = self._find_alias(header)
-
-            mapping[header] = standardized
+            mapping[header] = self._find_alias(header)
 
         return mapping
 
+    # --------------------------------------------------
+    # Alias Detection
+    # --------------------------------------------------
+
     def _find_alias(self, header):
         """
-        Return standardized name if alias exists.
+        Return standardized alias if found.
         Otherwise return normalized header.
         """
 
@@ -130,6 +185,10 @@ class ColumnMapper:
             return self.ALIASES[normalized]
 
         return normalized.replace(" ", "_")
+
+    # --------------------------------------------------
+    # Header Normalization
+    # --------------------------------------------------
 
     def _normalize(self, text):
         """
@@ -158,6 +217,10 @@ class ColumnMapper:
 
         return text
 
+    # --------------------------------------------------
+    # Utility
+    # --------------------------------------------------
+
     def _is_empty(self, value):
         """
         Check whether a header is empty.
@@ -170,3 +233,25 @@ class ColumnMapper:
             return True
 
         return False
+
+    # --------------------------------------------------
+    # Summary
+    # --------------------------------------------------
+
+    def summary(self, mappings):
+        """
+        Generate mapping summary.
+        """
+
+        return {
+
+            "total_mappings": len(mappings),
+
+            "mapped_columns": sorted(
+                {
+                    mapping["standard_name"]
+                    for mapping in mappings
+                }
+            )
+
+        }
