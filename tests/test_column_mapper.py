@@ -3,33 +3,48 @@ from core.column_mapper import ColumnMapper
 
 def test_column_mapper():
 
-    workbook_profile = {
+    source_profile = {
         "worksheets": {
-            "Payroll": {
+            "Employees": {
                 "headers": [
-                    "Emp ID",
+                    "Employee ID",
                     "Employee Name",
+                    "Department",
                     "Basic Salary",
                     "HRA",
-                    "PF",
-                    "Net Pay"
-                ]
-            },
-            "Attendance": {
-                "headers": [
-                    "Emp ID",
-                    "Date",
-                    "Status"
+                    "PF"
                 ]
             }
         }
     }
 
-    mapper = ColumnMapper(workbook_profile)
+    target_profile = {
+        "worksheets": {
+            "Performance": {
+                "headers": [
+                    "Emp ID",
+                    "Name",
+                    "Department",
+                    "Basic Salary",
+                    "Net Pay",
+                    "HRA"
+                ]
+            }
+        }
+    }
 
-    result = mapper.map_columns()
+    mapper = ColumnMapper(source_profile, target_profile)
 
-    print(result)
+    mappings = mapper.map_columns()
+
+    print("\n===== COLUMN MAPPINGS =====\n")
+
+    for mapping in mappings:
+        print(mapping)
+
+    print("\n===== SUMMARY =====\n")
+    print(mapper.summary(mappings))
+
 
 if __name__ == "__main__":
     test_column_mapper()
