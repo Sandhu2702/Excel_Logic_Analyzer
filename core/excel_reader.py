@@ -4,10 +4,7 @@ from typing import Dict
 
 import pandas as pd
 
-
-# ==========================================================
-# Workbook Data Model
-# ==========================================================
+# Workbook Data Model----------------------->
 
 @dataclass
 class WorkbookData:
@@ -20,7 +17,7 @@ class WorkbookData:
     sheet_count: int
     sheet_names: list[str]
 
-    # Dictionary:
+    # Dictionary:------------------------->
     # Key   -> Sheet Name
     # Value -> DataFrame
     sheets: Dict[str, pd.DataFrame] = field(default_factory=dict)
@@ -28,10 +25,7 @@ class WorkbookData:
     # Dictionary containing metadata of each sheet
     metadata: Dict[str, dict] = field(default_factory=dict)
 
-
-# ==========================================================
-# Excel Reader
-# ==========================================================
+# Excel Reader-------------------------------------->
 
 class ExcelReader:
     """
@@ -40,9 +34,8 @@ class ExcelReader:
 
     SUPPORTED_EXTENSIONS = (".xlsx", ".xls")
 
-    # ------------------------------------------------------
-    # Validate Excel File
-    # ------------------------------------------------------
+    # Validate Excel File--------------------------->
+
     def validate_file(self, file_path: str) -> None:
 
         path = Path(file_path)
@@ -55,9 +48,8 @@ class ExcelReader:
                 "Only .xlsx and .xls files are supported."
             )
 
-    # ------------------------------------------------------
-    # Extract Metadata
-    # ------------------------------------------------------
+    # Extract Metadata-------------------------------->
+
     def extract_metadata(
         self,
         dataframe: pd.DataFrame
@@ -79,9 +71,8 @@ class ExcelReader:
 
         }
 
-    # ------------------------------------------------------
-    # Read Workbook
-    # ------------------------------------------------------
+    # Read Workbook----------------------------------------->
+    
     def read(self, file_path: str) -> WorkbookData:
 
         self.validate_file(file_path)
