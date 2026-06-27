@@ -1,30 +1,21 @@
-from core.excel_reader import ExcelReader
+import customtkinter as ctk
+from Gui.Home import HomeScreen
 
-reader = ExcelReader()
+def main():
+    # Set dark theme and blue color scheme
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("blue")
 
-source = reader.read("sample_data/Employee details.xlsx")
+    # Create main application window
+    app = ctk.CTk()
+    app.title("Excel Logic Analyzer")
+    app.geometry("1000x700")
 
-print("=" * 50)
-print("Workbook Name :", source.file_name)
-print("Sheet Count   :", source.sheet_count)
-print("Sheet Names   :", source.sheet_names)
-print("=" * 50)
+    # Load HomeScreen (GUI entry point)
+    HomeScreen(app)
 
-for sheet_name, info in source.metadata.items():
+    # Start the application loop
+    app.mainloop()
 
-    print(f"\nSheet : {sheet_name}")
-    print("-" * 40)
-
-    print("Rows      :", info["rows"])
-    print("Columns   :", info["columns"])
-    print("Column Names:")
-    print(info["column_names"])
-
-    print("\nData Types:")
-    print(info["data_types"])
-
-    print("\nMissing Values:")
-    print(info["missing_values"])
-
-    print("\nDuplicate Rows:")
-    print(info["duplicate_rows"])
+if __name__ == "__main__":
+    main()
