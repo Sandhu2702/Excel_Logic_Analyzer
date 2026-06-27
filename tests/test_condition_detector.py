@@ -45,26 +45,28 @@ def test_extract_ifs():
 
 def test_detect():
 
-    formula_data = [
-        {
-            "sheet": "Sheet1",
-            "cell": "D2",
-            "formula": '=IF(C2>=90,"Excellent","Average")',
-            "formula_type": "conditional",
-        },
-        {
-            "sheet": "Sheet1",
-            "cell": "E2",
-            "formula": '=IF(AND(C2>=90,D2="Yes"),100,0)',
-            "formula_type": "logical",
-        },
-        {
-            "sheet": "Sheet1",
-            "cell": "F2",
-            "formula": '=IFS(A2>90,"A",A2>80,"B",TRUE,"C")',
-            "formula_type": "conditional",
-        },
-    ]
+    formula_data = {
+        "Sheet1": [
+           {
+                "sheet": "Sheet1",
+                "cell": "D2",
+                "formula": '=IF(C2>=90,"Excellent","Average")',
+                "category": "conditional"
+            },
+            {
+                "sheet": "Sheet1",
+                "cell": "E2",
+                "formula": '=IF(AND(C2>=90,D2="Yes"),100,0)',
+                "category": "logical"
+            },
+            {
+                "sheet": "Sheet1",
+                "cell": "F2",
+                "formula": '=IFS(A2>90,"A",A2>80,"B",TRUE,"C")',
+                "category": "conditional"
+            }
+        ]
+    }
 
     detector = ConditionDetector(formula_data)
 
@@ -73,28 +75,31 @@ def test_detect():
     for result in results:
         print(result)
 
+
 def test_summary():
 
-    formula_data = [
-        {
-            "sheet": "Sheet1",
-            "cell": "D2",
-            "formula": '=IF(C2>=90,"Excellent","Average")',
-            "formula_type": "conditional",
-        },
-        {
-            "sheet": "Sheet1",
-            "cell": "E2",
-            "formula": '=IF(AND(C2>=90,D2="Yes"),100,0)',
-            "formula_type": "logical",
-        },
-        {
-            "sheet": "Sheet1",
-            "cell": "F2",
-            "formula": '=IFS(A2>90,"A",A2>80,"B",TRUE,"C")',
-            "formula_type": "conditional",
-        },
-    ]
+    formula_data = {
+        "Sheet1": [
+            {
+                 "sheet": "Sheet1",
+                 "cell": "D2",
+                 "formula": '=IF(C2>=90,"Excellent","Average")',
+                 "category": "conditional",
+            },
+            {
+                 "sheet": "Sheet1",
+                 "cell": "E2",
+                 "formula": '=IF(AND(C2>=90,D2="Yes"),100,0)',
+                 "category": "logical",
+            },
+            {
+                 "sheet": "Sheet1",
+                 "cell": "F2",
+                 "formula": '=IFS(A2>90,"A",A2>80,"B",TRUE,"C")',
+                 "category": "conditional",
+            },
+        ]
+    }
 
     detector = ConditionDetector(formula_data)
 
