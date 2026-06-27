@@ -5,7 +5,7 @@ from core.lookup_detector import LookupDetector
 
 
 def main():
-    file_path = "sample_data/Employee details.xlsx"
+    file_path = "sample_data/PERFORMANCE.xlsx"
 
     reader = ExcelReader()
     workbook = reader.read(file_path)

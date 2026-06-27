@@ -5,7 +5,7 @@ def test_excel_reader():
 
     reader = ExcelReader()
 
-    workbook = reader.read("sample_data/PERFORMANCE.xlsx")
+    workbook = reader.read("sample_data/Employee details.xlsx")
 
     print(type(workbook.workbook))
     print(workbook.workbook.sheetnames)
