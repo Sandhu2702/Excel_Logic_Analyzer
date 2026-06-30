@@ -3,7 +3,7 @@ from pprint import pprint
 from core.excel_reader import ExcelReader
 from core.workbook_analyzer import WorkbookAnalyzer
 
-FILE_PATH = "sample_data/Employee details.xlsx"   # Change this path if needed
+FILE_PATH = "sample_data/Employee_details.xlsx"   # Change this path if needed
 
 
 def main():
