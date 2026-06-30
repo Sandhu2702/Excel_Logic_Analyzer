@@ -1,40 +1,142 @@
 import os
 
+def get_sqlite_type(dtype):
+
+    dtype = str(dtype).lower()
+
+    if "int" in dtype:
+        return "INTEGER"
+
+    elif "float" in dtype:
+        return "REAL"
+
+    else:
+        return "TEXT"
+
+def generate_database_schema(report, output_dir):
+
+    schema_sql = ""
+
+    for table in report["tables"]:
+
+        table_name = table["table_name"]
+
+        if table_name == report["source_table"]:
+            column_types = report["source_column_types"]
+        else:
+            column_types = report["target_column_types"]
+
+        schema_sql += f"""
+CREATE TABLE IF NOT EXISTS {table_name} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+"""
+
+        for column in table["columns"]:
+
+            sql_name = (
+                column.lower()
+                .replace(" ", "_")
+                .replace("%", "percent")
+                .replace("(", "")
+                .replace(")", "")
+            )
+
+            sqlite_type = get_sqlite_type(
+                column_types[column]
+            )
+
+            schema_sql += (
+                f"    {sql_name} {sqlite_type},\n"
+            )
+
+        schema_sql = schema_sql.rstrip(",\n")
+
+        schema_sql += "\n);\n\n"
+
+    with open(
+        os.path.join(output_dir, "schema.sql"),
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(schema_sql)
 
 def generate_flask_app(report):
 
     output_dir = "generated_app"
 
     os.makedirs(output_dir, exist_ok=True)
+
+    templates_dir = os.path.join(
+        output_dir,
+        "templates"
+    )
+
     os.makedirs(
-        os.path.join(output_dir, "templates"),
+        templates_dir,
         exist_ok=True
     )
 
-    # -----------------------------
+    generate_database_schema(
+        report,
+        output_dir
+    )
+
+    # =====================================
+    # Dynamic Route Generation
+    # =====================================
+
+    routes = ""
+
+    for table in report["tables"]:
+
+        table_name = table["table_name"]
+
+        routes += f"""
+
+@app.route("/{table_name}")
+def {table_name}():
+    return render_template("{table_name}_list.html")
+
+
+@app.route("/{table_name}/add")
+def add_{table_name}():
+    return render_template("{table_name}_add.html")
+"""
+
+    # =====================================
     # Flask App
-    # -----------------------------
+    # =====================================
 
-    flask_code = '''
-from flask import Flask, render_template
+    flask_code = f'''
+    from flask import Flask, render_template
+    import sqlite3
 
-app = Flask(__name__)
+    app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+    def init_db():
 
-@app.route("/source")
-def source():
-    return render_template("source.html")
+       conn = sqlite3.connect("database.db")
 
-@app.route("/target")
-def target():
-    return render_template("target.html")
+       with open("schema.sql", "r", encoding="utf-8") as f:
+          conn.executescript(f.read())
 
-if __name__ == "__main__":
-    app.run(debug=True)
-'''
+       conn.commit()
+       conn.close()
+
+
+    @app.route("/")
+    def home():
+       return render_template("index.html")
+
+    {routes}
+
+    if __name__ == "__main__":
+
+        init_db()
+
+        app.run(debug=True)
+    '''
 
     with open(
         os.path.join(output_dir, "app.py"),
@@ -44,14 +146,15 @@ if __name__ == "__main__":
 
         f.write(flask_code)
 
-    # -----------------------------
+    # =====================================
     # Home Page
-    # -----------------------------
+    # =====================================
 
-    home_html = f'''
+    home_html = f"""
 <!DOCTYPE html>
 
 <html>
+
 <head>
 <title>{report["application_type"]}</title>
 </head>
@@ -63,27 +166,43 @@ if __name__ == "__main__":
 <h2>Modules</h2>
 
 <ul>
-'''
+"""
 
     for module in report["modules"]:
         home_html += f"<li>{module}</li>"
 
-    home_html += '''
-
+    home_html += """
 </ul>
 
-<a href="/source">Source Data</a>
-<br><br>
-<a href="/target">Target Data</a>
+<h2>Generated Tables</h2>
+"""
 
+    for table in report["tables"]:
+
+        table_name = table["table_name"]
+
+        display_name = (
+            table_name
+            .replace("_", " ")
+            .title()
+        )
+
+        home_html += f"""
+<a href="/{table_name}">
+{display_name}
+</a>
+
+<br><br>
+"""
+
+    home_html += """
 </body>
 </html>
-'''
+"""
 
     with open(
         os.path.join(
-            output_dir,
-            "templates",
+            templates_dir,
             "index.html"
         ),
         "w",
@@ -92,92 +211,133 @@ if __name__ == "__main__":
 
         f.write(home_html)
 
-    # -----------------------------
-    # Source Page
-    # -----------------------------
+    # =====================================
+    # Dynamic Template Generation
+    # =====================================
 
-    source_html = """
+    for table in report["tables"]:
+
+        table_name = table["table_name"]
+
+        columns = table["columns"]
+
+        display_name = (
+            table_name
+            .replace("_", " ")
+            .title()
+        )
+
+        # ---------------------------------
+        # LIST PAGE
+        # ---------------------------------
+
+        list_html = f"""
 <!DOCTYPE html>
 
 <html>
+
 <head>
-<title>Source Entity</title>
+<title>{display_name}</title>
 </head>
 
 <body>
 
-<h1>Source Entity</h1>
+<h1>{display_name}</h1>
+
+<a href="/{table_name}/add">
+Add Record
+</a>
+
+<h3>Columns</h3>
 
 <ul>
 """
 
-    for col in report["source_columns"]:
-        source_html += f"<li>{col}</li>"
+        for col in columns:
+            list_html += f"<li>{col}</li>"
 
-    source_html += """
-
+        list_html += """
 </ul>
 
-<a href="/">Back</a>
+<a href="/">
+Back Home
+</a>
 
 </body>
 </html>
 """
 
-    with open(
-        os.path.join(
-            output_dir,
-            "templates",
-            "source.html"
-        ),
-        "w",
-        encoding="utf-8"
-    ) as f:
+        with open(
+            os.path.join(
+                templates_dir,
+                f"{table_name}_list.html"
+            ),
+            "w",
+            encoding="utf-8"
+        ) as f:
 
-        f.write(source_html)
+            f.write(list_html)
 
-    # -----------------------------
-    # Target Page
-    # -----------------------------
+        # ---------------------------------
+        # ADD PAGE
+        # ---------------------------------
 
-    target_html = """
+        add_html = f"""
 <!DOCTYPE html>
 
 <html>
+
 <head>
-<title>Target Entity</title>
+<title>Add {display_name}</title>
 </head>
 
 <body>
 
-<h1>Target Entity</h1>
+<h1>Add {display_name}</h1>
 
-<ul>
+<form>
 """
 
-    for col in report["target_columns"]:
-        target_html += f"<li>{col}</li>"
+        for col in columns:
 
-    target_html += """
+            add_html += f"""
+<label>{col}</label>
+<br>
 
-</ul>
+<input
+type="text"
+name="{col}"
+>
 
-<a href="/">Back</a>
+<br><br>
+"""
+
+        add_html += """
+<button type="submit">
+Save
+</button>
+
+</form>
+
+<br>
+
+<a href="/">
+Back Home
+</a>
 
 </body>
 </html>
 """
 
-    with open(
-        os.path.join(
-            output_dir,
-            "templates",
-            "target.html"
-        ),
-        "w",
-        encoding="utf-8"
-    ) as f:
+        with open(
+            os.path.join(
+                templates_dir,
+                f"{table_name}_add.html"
+            ),
+            "w",
+            encoding="utf-8"
+        ) as f:
 
-        f.write(target_html)
+            f.write(add_html)
 
     return output_dir

@@ -152,11 +152,36 @@ def generate_report(source_file, target_file):
             "Analytics"
         ])
 
+    tables = [
+      {
+        "table_name": source_table,
+        "columns": list(source_df.columns)
+      },
+      {
+        "table_name": target_table,
+        "columns": list(target_df.columns)
+      }
+    ]
+
+    source_column_types = {
+      col: str(dtype)
+      for col, dtype in source_df.dtypes.items()
+    }
+
+    target_column_types = {
+      col: str(dtype)
+      for col, dtype in target_df.dtypes.items()
+    }
+
     return {
 
         "source_columns": list(source_df.columns),
 
         "target_columns": list(target_df.columns),
+
+        "source_column_types": source_column_types,
+
+        "target_column_types": target_column_types,
 
         "relationships": common_columns,
 
@@ -172,5 +197,7 @@ def generate_report(source_file, target_file):
 
         "source_table": source_table,
 
-        "target_table": target_table
+        "target_table": target_table,
+
+        "tables": tables
     }
