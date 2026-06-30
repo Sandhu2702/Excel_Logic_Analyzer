@@ -1,83 +1,278 @@
 import customtkinter as ctk
-from tkinter import ttk
-from tkinter import messagebox
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 class Dashboard(ctk.CTkToplevel):
 
-    def __init__(self, parent, merged_df):
+    def __init__(self, parent, report):
         super().__init__(parent)
 
-        self.title("Excel Logic Analyzer Dashboard")
+        self.title("Business Application Generator")
         self.geometry("1100x700")
 
-        self.merged_df = merged_df
+        self.report = report
 
-        title = ctk.CTkLabel(self, text="Excel Logic Analyzer Dashboard", font=("Arial", 28, "bold"))
+        title = ctk.CTkLabel(
+            self,
+            text="Excel to Business Application Generator",
+            font=("Arial", 28, "bold")
+        )
         title.pack(pady=20)
 
         self.tabs = ctk.CTkTabview(self)
-        self.tabs.pack(fill="both", expand=True, padx=20, pady=20)
+        self.tabs.pack(
+            fill="both",
+            expand=True,
+            padx=20,
+            pady=20
+        )
 
-        self.tabs.add("Workbook Summary")
-        self.tabs.add("Logic Report")
-        self.tabs.add("Charts")   # ✅ New Tab
+        self.tabs.add("Entities")
+        self.tabs.add("Relationships")
+        self.tabs.add("Generated Application")
 
-        self.create_summary_tab()
-        self.create_logic_report_tab()
-        self.create_charts_tab()  # ✅ Call chart function
+        self.create_entities_tab()
+        self.create_relationships_tab()
+        self.create_application_tab()
 
-    def create_summary_tab(self):
-        tab = self.tabs.tab("Workbook Summary")
-        textbox = ctk.CTkTextbox(tab, width=950, height=550)
-        textbox.pack(padx=20, pady=20, fill="both", expand=True)
+    # ==================================================
+    # ENTITIES TAB
+    # ==================================================
 
-        summary_text = f"Rows: {len(self.merged_df)}\nColumns: {len(self.merged_df.columns)}\n\n"
-        summary_text += "Column Names:\n"
-        for col in self.merged_df.columns:
-            summary_text += f"   • {col}\n"
+    def create_entities_tab(self):
 
-        textbox.insert("1.0", summary_text)
+        tab = self.tabs.tab("Entities")
+
+        textbox = ctk.CTkTextbox(tab)
+        textbox.pack(
+            padx=20,
+            pady=20,
+            fill="both",
+            expand=True
+        )
+
+        text = ""
+
+        text += "SOURCE ENTITY\n"
+        text += "-" * 40 + "\n\n"
+
+        for col in self.report["source_columns"]:
+            text += f"• {col}\n"
+
+        text += "\n\n"
+
+        text += "TARGET ENTITY\n"
+        text += "-" * 40 + "\n\n"
+
+        for col in self.report["target_columns"]:
+            text += f"• {col}\n"
+
+        textbox.insert("1.0", text)
         textbox.configure(state="disabled")
 
-    def create_logic_report_tab(self):
-        tab = self.tabs.tab("Logic Report")
+    # ==================================================
+    # RELATIONSHIPS TAB
+    # ==================================================
 
-        columns = list(self.merged_df.columns)
-        tree = ttk.Treeview(tab, columns=columns, show="headings", height=15)
+    def create_relationships_tab(self):
 
-        for col in columns:
-            tree.heading(col, text=col)
-            tree.column(col, width=120)
+        tab = self.tabs.tab("Relationships")
 
-        for _, row in self.merged_df.iterrows():
-            tree.insert("", "end", values=list(row))
+        textbox = ctk.CTkTextbox(tab)
+        textbox.pack(
+            padx=20,
+            pady=20,
+            fill="both",
+            expand=True
+        )
 
-        tree.pack(pady=20, fill="both", expand=True)
+        text = "DETECTED RELATIONSHIPS\n"
+        text += "-" * 40 + "\n\n"
 
-        export_btn = ctk.CTkButton(tab, text="Export to Excel", command=self.export_results)
-        export_btn.pack(pady=10)
+        if self.report["relationships"]:
 
-    def export_results(self):
-        try:
-            self.merged_df.to_excel("output_report.xlsx", index=False)
-            messagebox.showinfo("Export", "Report exported successfully as output_report.xlsx")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to export: {e}")
+            for rel in self.report["relationships"]:
 
-    def create_charts_tab(self):
-        tab = self.tabs.tab("Charts")
+                text += f"• Common Linking Field : {rel}\n"
+                text += (
+                    f"• Source and Target datasets "
+                    f"are connected using {rel}\n"
+                )
+                text += (
+                    "• Relationship Type : "
+                    "One-to-One Record Mapping\n\n"
+                )
 
-        # ✅ Department-wise Average Salary
-        dept_salary = self.merged_df.groupby("Department")["Salary"].mean()
+        else:
 
-        fig, ax = plt.subplots(figsize=(6,4))
-        dept_salary.plot(kind="bar", ax=ax, color="skyblue")
-        ax.set_title("Department-wise Average Salary")
-        ax.set_ylabel("Average Salary")
-        ax.set_xlabel("Department")
+            text += "No relationships detected."
 
-        canvas = FigureCanvasTkAgg(fig, master=tab)
-        canvas.draw()
-        canvas.get_tk_widget().pack(pady=20, fill="both", expand=True)
+        textbox.insert("1.0", text)
+        textbox.configure(state="disabled")
+
+    # ==================================================
+    # GENERATED APPLICATION TAB
+    # ==================================================
+
+    def create_application_tab(self):
+
+        tab = self.tabs.tab("Generated Application")
+
+        textbox = ctk.CTkTextbox(tab)
+
+        textbox.pack(
+            padx=20,
+            pady=20,
+            fill="both",
+            expand=True
+        )
+
+        text = ""
+
+        text += "APPLICATION DESIGN REPORT\n"
+        text += "=" * 50 + "\n\n"
+
+        # ----------------------------------------------
+        # Entities
+        # ----------------------------------------------
+
+        text += "BUSINESS ENTITIES DETECTED\n"
+        text += "-" * 30 + "\n"
+
+        text += f"Source Entity ({len(self.report['source_columns'])} fields)\n"
+
+        for col in self.report["source_columns"]:
+            text += f"   • {col}\n"
+
+        text += "\n"
+
+        text += f"Target Entity ({len(self.report['target_columns'])} fields)\n"
+
+        for col in self.report["target_columns"]:
+            text += f"   • {col}\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
+        # Relationships
+        # ----------------------------------------------
+
+        text += "RELATIONSHIPS DETECTED\n"
+        text += "-" * 30 + "\n"
+
+        if self.report["relationships"]:
+
+            for rel in self.report["relationships"]:
+                text += (
+                    f"   • {rel} is a common key used to "
+                    f"link source and target records\n"
+                )
+
+        else:
+
+            text += "   • No common relationship detected\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
+        # Application Type
+        # ----------------------------------------------
+
+        text += "SUGGESTED APPLICATION TYPE\n"
+        text += "-" * 30 + "\n"
+
+        text += f"   • {self.report['application_type']}\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
+        # Business Rules
+        # ----------------------------------------------
+
+        text += "BUSINESS RULES DETECTED\n"
+        text += "-" * 30 + "\n"
+
+        if self.report["business_rules"]:
+
+            for rule in self.report["business_rules"]:
+                text += f"   • {rule}\n"
+
+        else:
+
+            text += "   • No business rules detected\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
+        # Modules
+        # ----------------------------------------------
+
+        text += "SUGGESTED APPLICATION MODULES\n"
+        text += "-" * 30 + "\n"
+
+        for index, module in enumerate(
+            self.report["modules"],
+            start=1
+        ):
+            text += f"{index}. {module}\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
+        # Database Tables
+        # ----------------------------------------------
+
+        text += "SUGGESTED DATABASE TABLES\n"
+        text += "-" * 30 + "\n"
+
+        text += f"{self.report['source_table']}\n"
+
+        for col in self.report["source_columns"]:
+            text += f"   • {col}\n"
+
+        text += "\n"
+
+        text += f"{self.report['target_table']}\n"
+
+        for col in self.report["target_columns"]:
+            text += f"   • {col}\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
+        # Relationship Model
+        # ----------------------------------------------
+
+        text += "DATA RELATIONSHIP MODEL\n"
+        text += "-" * 30 + "\n"
+
+        if self.report["relationships"]:
+
+            relation = self.report["relationships"][0]
+
+            text += f"{self.report['source_table']}\n"
+            text += "      |\n"
+            text += f"      | {relation}\n"
+            text += "      |\n"
+            text += "      V\n"
+            text += f"{self.report['target_table']}\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
+        # Recommendation
+        # ----------------------------------------------
+
+        text += "SYSTEM RECOMMENDATION\n"
+        text += "-" * 30 + "\n"
+
+        text += (
+            f"The uploaded Excel files represent a "
+            f"{self.report['application_type']}. "
+            f"The detected entities, business rules and "
+            f"relationships can be transformed into a "
+            f"web-based application with dedicated modules, "
+            f"database tables and reporting capabilities."
+        )
+
+        textbox.insert("1.0", text)
+        textbox.configure(state="disabled")
