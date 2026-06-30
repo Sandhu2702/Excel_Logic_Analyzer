@@ -3,7 +3,8 @@ from tkinter import filedialog
 import os
 
 from core.report_generator import generate_report
-from Gui.dashboard import Dashboard
+from gui.dashboard import Dashboard
+from core.app_generator import generate_flask_app
 
 
 class HomeScreen(ctk.CTkFrame):
@@ -172,13 +173,15 @@ class HomeScreen(ctk.CTkFrame):
         try:
 
             self.status_label.configure(
-                text="Analyzing Excel files and generating application design..."
+                text="Application Generated Successfully ✅"
             )
 
             report = generate_report(
                 self.source_file,
                 self.target_file
             )
+
+            generate_flask_app(report)
 
             Dashboard(
                 self,
