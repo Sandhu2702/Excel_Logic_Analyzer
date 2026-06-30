@@ -7,7 +7,7 @@ def test_formula_detector():
 
     reader = ExcelReader()
 
-    workbook = reader.read("sample_data/test_formula.xlsx")
+    workbook = reader.read("sample_data/Performance_benefits.xlsx")
 
     logic = LogicDetector(workbook)
 

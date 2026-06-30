@@ -6,8 +6,8 @@ from core.formula_detector import FormulaDetector
 from core.lookup_detector import LookupDetector
 from core.relationship_detector import RelationshipDetector
 
-SOURCE = "sample_data/Employee details.xlsx"
-TARGET = "sample_data/PERFORMANCE.xlsx"
+SOURCE = "sample_data/Employee_details.xlsx"
+TARGET = "sample_data/Performance_benefits.xlsx"
 
 reader = ExcelReader()
 

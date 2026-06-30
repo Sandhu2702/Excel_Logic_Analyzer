@@ -6,13 +6,17 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Dashboard(ctk.CTkToplevel):
 
-    def __init__(self, parent, merged_df):
+    def __init__(self, parent, merged_df, formula_results, lookup_results, condition_results, relationship_results):
         super().__init__(parent)
 
         self.title("Excel Logic Analyzer Dashboard")
         self.geometry("1100x700")
 
         self.merged_df = merged_df
+        self.formula_results = formula_results
+        self.lookup_results = lookup_results
+        self.condition_results = condition_results
+        self.relationship_results = relationship_results
 
         title = ctk.CTkLabel(self, text="Excel Logic Analyzer Dashboard", font=("Arial", 28, "bold"))
         title.pack(pady=20)
@@ -42,29 +46,89 @@ class Dashboard(ctk.CTkToplevel):
         textbox.configure(state="disabled")
 
     def create_logic_report_tab(self):
-        tab = self.tabs.tab("Logic Report")
 
-        columns = list(self.merged_df.columns)
-        tree = ttk.Treeview(tab, columns=columns, show="headings", height=15)
+       tab = self.tabs.tab("Logic Report")
 
-        for col in columns:
-            tree.heading(col, text=col)
-            tree.column(col, width=120)
+       textbox = ctk.CTkTextbox(
+          tab,
+          width=950,
+          height=550
+       )
 
-        for _, row in self.merged_df.iterrows():
-            tree.insert("", "end", values=list(row))
+       textbox.pack(
+          padx=20,
+          pady=20,
+          fill="both",
+          expand=True
+          )
 
-        tree.pack(pady=20, fill="both", expand=True)
+       report = ""
 
-        export_btn = ctk.CTkButton(tab, text="Export to Excel", command=self.export_results)
-        export_btn.pack(pady=10)
+       report += "========== FORMULAS ==========\n\n"
 
-    def export_results(self):
-        try:
-            self.merged_df.to_excel("output_report.xlsx", index=False)
-            messagebox.showinfo("Export", "Report exported successfully as output_report.xlsx")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to export: {e}")
+       total_formulas = 0
+
+       for sheet_name, formulas in self.formula_results.items():
+
+          report += f"\nSheet: {sheet_name}\n"
+
+          for formula in formulas:
+
+            total_formulas += 1
+
+            report += (
+                f'Cell: {formula["cell"]} | '
+                f'Function: {formula.get("function")} | '
+                f'Category: {formula["category"]}\n'
+            )
+
+          report += f"\nTotal Formulas: {total_formulas}\n\n"
+
+          report += "\n========== LOOKUPS ==========\n\n"
+
+          for sheet_name, lookups in self.lookup_results.items():
+
+            for lookup in lookups:
+
+              report += (
+                 f'{lookup["cell"]} -> '
+                 f'{lookup["lookup_type"]}\n'
+              )
+
+          report += "\n========== CONDITIONS ==========\n\n"
+
+          if len(self.condition_results) == 0:
+
+             report += "No conditions detected.\n"
+
+          else:
+
+             for condition in self.condition_results:
+
+               report += (
+                  f'{condition["condition"]} '
+                  f'({condition["operator"]})\n'
+               )
+
+             report += "\n========== RELATIONSHIPS ==========\n\n"
+
+          for relation in self.relationship_results["relationships"]:
+
+            report += (
+              f'{relation["relationship"]} | '
+              f'{relation["target_column"]}\n'
+            )
+
+          textbox.insert("1.0", report)
+
+          textbox.configure(state="disabled")
+
+          def export_results(self):
+            try:
+                self.merged_df.to_excel("output_report.xlsx", index=False)
+                messagebox.showinfo("Export", "Report exported successfully as output_report.xlsx")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to export: {e}")
 
     def create_charts_tab(self):
         tab = self.tabs.tab("Charts")

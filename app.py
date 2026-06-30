@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from Gui.Home import HomeScreen
+from gui.Home import HomeScreen
 
 def main():
     # Set dark theme and blue color scheme
