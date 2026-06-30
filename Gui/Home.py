@@ -3,7 +3,7 @@ from tkinter import filedialog
 import os
 
 from core.report_generator import generate_report
-from Gui.dashboard import Dashboard
+from gui.dashboard import Dashboard
 
 
 class HomeScreen(ctk.CTkFrame):

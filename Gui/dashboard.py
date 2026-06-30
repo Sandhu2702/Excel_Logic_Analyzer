@@ -1,6 +1,5 @@
 import customtkinter as ctk
 
-
 class Dashboard(ctk.CTkToplevel):
 
     def __init__(self, parent, report):
