@@ -6,18 +6,18 @@ def generate_report(source_file, target_file):
     source_df = pd.read_excel(source_file)
     target_df = pd.read_excel(target_file)
 
-    # -----------------------------------
-    # Common Relationships
-    # -----------------------------------
+    # ==========================================
+    # Relationship Detection
+    # ==========================================
 
     common_columns = list(
         set(source_df.columns) &
         set(target_df.columns)
     )
 
-    # -----------------------------------
-    # Application Type Detection
-    # -----------------------------------
+    # ==========================================
+    # Column Analysis
+    # ==========================================
 
     all_columns = [
         str(col).lower()
@@ -27,69 +27,103 @@ def generate_report(source_file, target_file):
         )
     ]
 
+    # ==========================================
+    # Application Type Detection
+    # ==========================================
+
     application_type = "Business Management System"
+
+    # Employee + Payroll
 
     if (
         any("employee" in col for col in all_columns)
-        and any("salary" in col for col in all_columns)
-        and any("performance" in col for col in all_columns)
+        and (
+            any("salary" in col for col in all_columns)
+            or any("bonus" in col for col in all_columns)
+            or any("tax" in col for col in all_columns)
+        )
     ):
+
         application_type = (
-            "Employee Performance & Payroll Management System"
+            "Employee & Payroll Management System"
         )
 
-    elif (
-        any("employee" in col for col in all_columns)
-        and any("salary" in col for col in all_columns)
-    ):
-        application_type = (
-            "Employee Payroll Management System"
-        )
+    # Employee Only
 
     elif any("employee" in col for col in all_columns):
+
         application_type = (
             "Employee Management System"
         )
+
+    # Customer
+
+    elif (
+        any("customer" in col for col in all_columns)
+        or any("order" in col for col in all_columns)
+    ):
+
+        application_type = (
+            "Customer Order Management System"
+        )
+
+    # Inventory
 
     elif (
         any("product" in col for col in all_columns)
         or any("inventory" in col for col in all_columns)
         or any("stock" in col for col in all_columns)
     ):
+
         application_type = (
             "Inventory Management System"
         )
 
+    # Sales
+
     elif (
-        any("customer" in col for col in all_columns)
-        or any("order" in col for col in all_columns)
+        any("sales" in col for col in all_columns)
+        or any("revenue" in col for col in all_columns)
     ):
+
         application_type = (
-            "Customer Order Management System"
+            "Sales Management System"
         )
 
-    # -----------------------------------
-    # Database Table Generation
-    # -----------------------------------
+    # ==========================================
+    # Database Table Names
+    # ==========================================
 
     source_table = "source_data"
     target_table = "target_data"
 
     if "Employee" in application_type:
-        source_table = "employee_master"
-        target_table = "employee_payroll"
 
-    elif "Inventory" in application_type:
-        source_table = "product_master"
-        target_table = "inventory_records"
+        source_table = "employee_master"
+
+        if "Payroll" in application_type:
+            target_table = "payroll_data"
+        else:
+            target_table = "employee_data"
 
     elif "Customer" in application_type:
+
         source_table = "customer_master"
         target_table = "customer_orders"
 
-    # -----------------------------------
+    elif "Inventory" in application_type:
+
+        source_table = "product_master"
+        target_table = "inventory_records"
+
+    elif "Sales" in application_type:
+
+        source_table = "sales_master"
+        target_table = "sales_reports"
+
+    # ==========================================
     # Business Rule Detection
-    # -----------------------------------
+    # ==========================================
 
     business_rules = []
 
@@ -102,38 +136,59 @@ def generate_report(source_file, target_file):
         "bonus %" in target_cols
         and "bonus amount" in target_cols
     ):
+
         business_rules.append(
-            "Bonus Amount may be derived from Salary × Bonus %"
+            "Bonus Amount may be derived from Bonus %"
         )
 
     if (
         "tax" in target_cols
         and "final pay" in target_cols
     ):
+
         business_rules.append(
-            "Final Pay may be derived using Salary, Bonus Amount and Tax"
+            "Final Pay may be derived after tax calculation"
         )
 
-    # -----------------------------------
-    # Dynamic Modules
-    # -----------------------------------
+    if (
+        "order amount" in target_cols
+        and "customer id" in target_cols
+    ):
+
+        business_rules.append(
+            "Order Amount is linked to Customer records"
+        )
+
+    if (
+        "stock" in target_cols
+        and "product id" in target_cols
+    ):
+
+        business_rules.append(
+            "Stock records are linked to Product records"
+        )
+
+    # ==========================================
+    # Module Detection
+    # ==========================================
 
     modules = []
 
-    if "Employee" in application_type:
+    if "Employee & Payroll" in application_type:
 
         modules.extend([
             "Employee Management",
-            "Performance Management",
-            "Payroll Management"
+            "Payroll Management",
+            "Reports & Analytics",
+            "Search & Filter"
         ])
 
-    elif "Inventory" in application_type:
+    elif "Employee" in application_type:
 
         modules.extend([
-            "Product Management",
-            "Inventory Tracking",
-            "Stock Reporting"
+            "Employee Management",
+            "Reports & Analytics",
+            "Search & Filter"
         ])
 
     elif "Customer" in application_type:
@@ -141,16 +196,40 @@ def generate_report(source_file, target_file):
         modules.extend([
             "Customer Management",
             "Order Management",
-            "Sales Reporting"
+            "Reports & Analytics",
+            "Search & Filter"
+        ])
+
+    elif "Inventory" in application_type:
+
+        modules.extend([
+            "Product Management",
+            "Inventory Management",
+            "Stock Reports",
+            "Search & Filter"
+        ])
+
+    elif "Sales" in application_type:
+
+        modules.extend([
+            "Sales Management",
+            "Revenue Reports",
+            "Analytics",
+            "Search & Filter"
         ])
 
     else:
 
         modules.extend([
             "Data Management",
-            "Reporting",
-            "Analytics"
+            "Reports",
+            "Analytics",
+            "Search & Filter"
         ])
+
+    # ==========================================
+    # Return Report
+    # ==========================================
 
     return {
 
