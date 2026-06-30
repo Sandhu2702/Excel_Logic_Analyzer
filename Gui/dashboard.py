@@ -259,6 +259,29 @@ class Dashboard(ctk.CTkToplevel):
         text += "\n\n"
 
         # ----------------------------------------------
+        # Suggested Screens
+        # ----------------------------------------------
+
+        text += "SUGGESTED WEB APPLICATION SCREENS\n"
+        text += "-" * 30 + "\n"
+
+        for module in self.report["modules"]:
+
+            if "Management" in module:
+
+                screen_name = module.replace(
+                    "Management",
+                    "Dashboard"
+                )
+
+                text += f"• {screen_name}\n"
+
+        text += "• Reports Dashboard\n"
+        text += "• Search Screen\n"
+
+        text += "\n\n"
+
+        # ----------------------------------------------
         # Recommendation
         # ----------------------------------------------
 
