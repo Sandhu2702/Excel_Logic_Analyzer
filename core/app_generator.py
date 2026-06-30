@@ -92,6 +92,33 @@ def generate_flask_app(report):
 
         table_name = table["table_name"]
 
+        column_names = []
+
+        for column in table["columns"]:
+
+            sql_name = (
+               column.lower()
+               .replace(" ", "_")
+               .replace("%", "percent")
+               .replace("(", "")
+               .replace(")", "")
+            )
+
+            column_names.append(sql_name)
+
+        columns_sql = ", ".join(column_names)
+
+        placeholders = ", ".join(
+           ["?"] * len(column_names)
+        )
+
+        form_values = ", ".join(
+            [
+               f'request.form.get("{col}")'
+               for col in column_names
+            ]
+        )
+
         routes += f"""
 
 @app.route("/{table_name}")
@@ -99,9 +126,35 @@ def {table_name}():
     return render_template("{table_name}_list.html")
 
 
-@app.route("/{table_name}/add")
+@app.route(
+    "/{table_name}/add",
+    methods=["GET", "POST"]
+)
 def add_{table_name}():
-    return render_template("{table_name}_add.html")
+
+    if request.method == "POST":
+
+        conn = get_connection()
+
+        conn.execute(
+            \"\"\"
+            INSERT INTO {table_name}
+            ({columns_sql})
+            VALUES ({placeholders})
+            \"\"\",
+            ({form_values},)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect(
+            url_for("{table_name}")
+        )
+
+    return render_template(
+        "{table_name}_add.html"
+    )
 """
 
     # =====================================
@@ -109,10 +162,26 @@ def add_{table_name}():
     # =====================================
 
     flask_code = f'''
-    from flask import Flask, render_template
+    from flask import (
+      Flask,
+      render_template,
+      request,
+      redirect,
+      url_for
+    )
     import sqlite3
 
     app = Flask(__name__)
+
+    def get_connection():
+
+        conn = sqlite3.connect(
+          "database.db"
+        )
+
+        conn.row_factory = sqlite3.Row
+
+        return conn
 
     def init_db():
 
@@ -295,22 +364,30 @@ Back Home
 
 <h1>Add {display_name}</h1>
 
-<form>
+<form method="POST">
 """
 
         for col in columns:
 
-            add_html += f"""
-<label>{col}</label>
-<br>
+          sql_name = (
+             col.lower()
+             .replace(" ", "_")
+             .replace("%", "percent")
+             .replace("(", "")
+             .replace(")", "")
+          )
 
-<input
-type="text"
-name="{col}"
->
+          add_html += f"""
+        <label>{col}</label>
+        <br>
 
-<br><br>
-"""
+        <input
+        type="text"
+        name="{sql_name}"
+        >
+
+        <br><br>
+        """
 
         add_html += """
 <button type="submit">

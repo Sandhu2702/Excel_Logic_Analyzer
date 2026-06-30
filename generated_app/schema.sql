@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS employee_master (
 );
 
 
-CREATE TABLE IF NOT EXISTS employee_payroll (
+CREATE TABLE IF NOT EXISTS payroll_data (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employee_id TEXT,
     salary INTEGER,
