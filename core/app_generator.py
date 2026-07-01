@@ -166,10 +166,30 @@ def add_{table_name}():
         )
 
     return render_template(
-        "{table_name}_add.html"
+       "{table_name}_add.html"
+    )
+
+
+@app.route(
+    "/{table_name}/delete/<int:id>",
+    methods=["POST"]
+)
+def delete_{table_name}(id):
+
+    conn = get_connection()
+
+    conn.execute(
+        "DELETE FROM {table_name} WHERE id = ?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(
+        url_for("{table_name}")
     )
 """
-
     # =====================================
     # Flask App
     # =====================================
@@ -341,6 +361,8 @@ Add Record
 <th>{{{{ col }}}}</th>
 {{% endfor %}}
 
+<th>Actions</th>
+
 </tr>
 
 {{% for row in rows %}}
@@ -352,6 +374,22 @@ Add Record
 {{% for col in columns %}}
 <td>{{{{ row[col] }}}}</td>
 {{% endfor %}}
+
+<td>
+
+<form
+    method="POST"
+    action="/{table_name}/delete/{{{{ row['id'] }}}}"
+>
+
+<button type="submit">
+Delete
+</button>
+
+</form>
+
+</td>
+
 
 </tr>
 

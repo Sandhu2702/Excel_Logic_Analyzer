@@ -82,7 +82,28 @@ def add_employee_master():
         )
 
     return render_template(
-        "employee_master_add.html"
+       "employee_master_add.html"
+    )
+
+
+@app.route(
+    "/employee_master/delete/<int:id>",
+    methods=["POST"]
+)
+def delete_employee_master(id):
+
+    conn = get_connection()
+
+    conn.execute(
+        "DELETE FROM employee_master WHERE id = ?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(
+        url_for("employee_master")
     )
 
 
@@ -131,7 +152,28 @@ def add_payroll_data():
         )
 
     return render_template(
-        "payroll_data_add.html"
+       "payroll_data_add.html"
+    )
+
+
+@app.route(
+    "/payroll_data/delete/<int:id>",
+    methods=["POST"]
+)
+def delete_payroll_data(id):
+
+    conn = get_connection()
+
+    conn.execute(
+        "DELETE FROM payroll_data WHERE id = ?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(
+        url_for("payroll_data")
     )
 
 

@@ -26,6 +26,8 @@ Add Record
 <th>{{ col }}</th>
 {% endfor %}
 
+<th>Actions</th>
+
 </tr>
 
 {% for row in rows %}
@@ -37,6 +39,22 @@ Add Record
 {% for col in columns %}
 <td>{{ row[col] }}</td>
 {% endfor %}
+
+<td>
+
+<form
+    method="POST"
+    action="/payroll_data/delete/{{ row['id'] }}"
+>
+
+<button type="submit">
+Delete
+</button>
+
+</form>
+
+</td>
+
 
 </tr>
 
