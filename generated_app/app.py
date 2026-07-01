@@ -106,6 +106,44 @@ def delete_employee_master(id):
         url_for("employee_master")
     )
 
+@app.route(
+    "/employee_master/edit/<int:id>",
+    methods=["GET", "POST"]
+)
+def edit_employee_master(id):
+
+    conn = get_connection()
+
+    if request.method == "POST":
+
+       conn.execute(
+           """
+           UPDATE employee_master
+           SET employee_id=?, employee_name=?, department=?, experience_years=?, salary=?, performance_rating=?, attendance_percent=?, certification=?, location=?
+           WHERE id = ?
+           """,
+           (request.form.get("employee_id"), request.form.get("employee_name"), request.form.get("department"), request.form.get("experience_years"), request.form.get("salary"), request.form.get("performance_rating"), request.form.get("attendance_percent"), request.form.get("certification"), request.form.get("location"), id)
+       )
+
+       conn.commit()
+       conn.close()
+
+       return redirect(
+          url_for("employee_master")
+       )
+
+    row = conn.execute(
+        "SELECT * FROM employee_master WHERE id = ?",
+        (id,)
+    ).fetchone()
+
+    conn.close()
+
+    return render_template(
+        "employee_master_edit.html",
+        row=row
+    )
+
 
 @app.route("/payroll_data")
 def payroll_data():
@@ -174,6 +212,44 @@ def delete_payroll_data(id):
 
     return redirect(
         url_for("payroll_data")
+    )
+
+@app.route(
+    "/payroll_data/edit/<int:id>",
+    methods=["GET", "POST"]
+)
+def edit_payroll_data(id):
+
+    conn = get_connection()
+
+    if request.method == "POST":
+
+       conn.execute(
+           """
+           UPDATE payroll_data
+           SET employee_id=?, salary=?, performance_score=?, department=?, bonus_percent=?, bonus_amount=?, scholarship=?, tax=?, net_salary=?, performance_grade=?, promotion=?, reward=?, experience_level=?
+           WHERE id = ?
+           """,
+           (request.form.get("employee_id"), request.form.get("salary"), request.form.get("performance_score"), request.form.get("department"), request.form.get("bonus_percent"), request.form.get("bonus_amount"), request.form.get("scholarship"), request.form.get("tax"), request.form.get("net_salary"), request.form.get("performance_grade"), request.form.get("promotion"), request.form.get("reward"), request.form.get("experience_level"), id)
+       )
+
+       conn.commit()
+       conn.close()
+
+       return redirect(
+          url_for("payroll_data")
+       )
+
+    row = conn.execute(
+        "SELECT * FROM payroll_data WHERE id = ?",
+        (id,)
+    ).fetchone()
+
+    conn.close()
+
+    return render_template(
+        "payroll_data_edit.html",
+        row=row
     )
 
 

@@ -42,6 +42,12 @@ Add Record
 
 <td>
 
+<a href="/employee_master/edit/{{ row['id'] }}">
+Edit
+</a>
+
+<br><br>
+
 <form
     method="POST"
     action="/employee_master/delete/{{ row['id'] }}"

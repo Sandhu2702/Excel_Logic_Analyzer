@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>Edit Payroll Data</title>
+</head>
+
+<body>
+
+<h1>Edit Payroll Data</h1>
+
+<form method="POST">
+
+<label>Employee ID</label>
+
+<br>
+
+<input
+type="text"
+name="employee_id"
+value="{{ row['employee_id'] }}"
+>
+
+<br><br>
+
+<label>Salary</label>
+
+<br>
+
+<input
+type="text"
+name="salary"
+value="{{ row['salary'] }}"
+>
+
+<br><br>
+
+<label>Performance Score</label>
+
+<br>
+
+<input
+type="text"
+name="performance_score"
+value="{{ row['performance_score'] }}"
+>
+
+<br><br>
+
+<label>Department</label>
+
+<br>
+
+<input
+type="text"
+name="department"
+value="{{ row['department'] }}"
+>
+
+<br><br>
+
+<label>Bonus %</label>
+
+<br>
+
+<input
+type="text"
+name="bonus_percent"
+value="{{ row['bonus_percent'] }}"
+>
+
+<br><br>
+
+<label>Bonus Amount</label>
+
+<br>
+
+<input
+type="text"
+name="bonus_amount"
+value="{{ row['bonus_amount'] }}"
+>
+
+<br><br>
+
+<label>Scholarship</label>
+
+<br>
+
+<input
+type="text"
+name="scholarship"
+value="{{ row['scholarship'] }}"
+>
+
+<br><br>
+
+<label>Tax</label>
+
+<br>
+
+<input
+type="text"
+name="tax"
+value="{{ row['tax'] }}"
+>
+
+<br><br>
+
+<label>Net Salary</label>
+
+<br>
+
+<input
+type="text"
+name="net_salary"
+value="{{ row['net_salary'] }}"
+>
+
+<br><br>
+
+<label>Performance Grade</label>
+
+<br>
+
+<input
+type="text"
+name="performance_grade"
+value="{{ row['performance_grade'] }}"
+>
+
+<br><br>
+
+<label>Promotion</label>
+
+<br>
+
+<input
+type="text"
+name="promotion"
+value="{{ row['promotion'] }}"
+>
+
+<br><br>
+
+<label>Reward</label>
+
+<br>
+
+<input
+type="text"
+name="reward"
+value="{{ row['reward'] }}"
+>
+
+<br><br>
+
+<label>Experience Level</label>
+
+<br>
+
+<input
+type="text"
+name="experience_level"
+value="{{ row['experience_level'] }}"
+>
+
+<br><br>
+
+<button type="submit">
+Update
+</button>
+
+</form>
+
+<br>
+
+<a href="/">
+Back Home
+</a>
+
+</body>
+</html>

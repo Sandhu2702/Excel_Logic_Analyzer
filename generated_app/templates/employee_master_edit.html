@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>Edit Employee Master</title>
+</head>
+
+<body>
+
+<h1>Edit Employee Master</h1>
+
+<form method="POST">
+
+<label>Employee ID</label>
+
+<br>
+
+<input
+type="text"
+name="employee_id"
+value="{{ row['employee_id'] }}"
+>
+
+<br><br>
+
+<label>Employee Name</label>
+
+<br>
+
+<input
+type="text"
+name="employee_name"
+value="{{ row['employee_name'] }}"
+>
+
+<br><br>
+
+<label>Department</label>
+
+<br>
+
+<input
+type="text"
+name="department"
+value="{{ row['department'] }}"
+>
+
+<br><br>
+
+<label>Experience (Years)</label>
+
+<br>
+
+<input
+type="text"
+name="experience_years"
+value="{{ row['experience_years'] }}"
+>
+
+<br><br>
+
+<label>Salary</label>
+
+<br>
+
+<input
+type="text"
+name="salary"
+value="{{ row['salary'] }}"
+>
+
+<br><br>
+
+<label>Performance Rating</label>
+
+<br>
+
+<input
+type="text"
+name="performance_rating"
+value="{{ row['performance_rating'] }}"
+>
+
+<br><br>
+
+<label>Attendance %</label>
+
+<br>
+
+<input
+type="text"
+name="attendance_percent"
+value="{{ row['attendance_percent'] }}"
+>
+
+<br><br>
+
+<label>Certification</label>
+
+<br>
+
+<input
+type="text"
+name="certification"
+value="{{ row['certification'] }}"
+>
+
+<br><br>
+
+<label>Location</label>
+
+<br>
+
+<input
+type="text"
+name="location"
+value="{{ row['location'] }}"
+>
+
+<br><br>
+
+<button type="submit">
+Update
+</button>
+
+</form>
+
+<br>
+
+<a href="/">
+Back Home
+</a>
+
+</body>
+</html>

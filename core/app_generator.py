@@ -119,6 +119,24 @@ def generate_flask_app(report):
             ]
         )
 
+        update_values = ", ".join(
+            [
+                f'request.form.get("{col}")'
+                for col in column_names
+            ]
+        )
+
+        update_sql = ", ".join(
+           [f"{col}=?" for col in column_names]
+        )
+
+        update_params = ", ".join(
+          [
+            f'request.form.get("{col}")'
+            for col in column_names
+          ]
+        )
+
         routes += f"""
 
 @app.route("/{table_name}")
@@ -188,6 +206,44 @@ def delete_{table_name}(id):
 
     return redirect(
         url_for("{table_name}")
+    )
+
+@app.route(
+    "/{table_name}/edit/<int:id>",
+    methods=["GET", "POST"]
+)
+def edit_{table_name}(id):
+
+    conn = get_connection()
+
+    if request.method == "POST":
+
+       conn.execute(
+           \"\"\"
+           UPDATE {table_name}
+           SET {update_sql}
+           WHERE id = ?
+           \"\"\",
+           ({update_params}, id)
+       )
+
+       conn.commit()
+       conn.close()
+
+       return redirect(
+          url_for("{table_name}")
+       )
+
+    row = conn.execute(
+        "SELECT * FROM {table_name} WHERE id = ?",
+        (id,)
+    ).fetchone()
+
+    conn.close()
+
+    return render_template(
+        "{table_name}_edit.html",
+        row=row
     )
 """
     # =====================================
@@ -377,6 +433,12 @@ Add Record
 
 <td>
 
+<a href="/{table_name}/edit/{{{{ row['id'] }}}}">
+Edit
+</a>
+
+<br><br>
+
 <form
     method="POST"
     action="/{table_name}/delete/{{{{ row['id'] }}}}"
@@ -487,5 +549,74 @@ Back Home
         ) as f:
 
             f.write(add_html)
+
+
+        edit_html = f"""
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>Edit {display_name}</title>
+</head>
+
+<body>
+
+<h1>Edit {display_name}</h1>
+
+<form method="POST">
+"""
+
+        for col in columns:
+
+            sql_name = (
+              col.lower()
+              .replace(" ", "_")
+              .replace("%", "percent")
+              .replace("(", "")
+              .replace(")", "")
+            )
+
+            edit_html += f"""
+<label>{col}</label>
+
+<br>
+
+<input
+type="text"
+name="{sql_name}"
+value="{{{{ row['{sql_name}'] }}}}"
+>
+
+<br><br>
+"""
+
+        edit_html += """
+<button type="submit">
+Update
+</button>
+
+</form>
+
+<br>
+
+<a href="/">
+Back Home
+</a>
+
+</body>
+</html>
+"""
+
+        with open(
+          os.path.join(
+             templates_dir,
+             f"{table_name}_edit.html"
+          ),
+          "w",
+          encoding="utf-8"
+        ) as f:
+
+          f.write(edit_html)
 
     return output_dir
