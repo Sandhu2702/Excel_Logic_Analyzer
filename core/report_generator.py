@@ -238,6 +238,21 @@ def generate_report(source_file, target_file):
       }
     ]
 
+    from core.database_relationship_detector import (
+        DatabaseRelationshipDetector
+    )
+
+    detector = DatabaseRelationshipDetector({
+        source_table: source_df,
+        target_table: target_df
+    })
+
+    primary_keys = detector.detect_primary_keys()
+
+    relationship_metadata = (
+        detector.detect_foreign_keys()
+    )
+
     source_column_types = {
       col: str(dtype)
       for col, dtype in source_df.dtypes.items()
@@ -258,7 +273,9 @@ def generate_report(source_file, target_file):
 
         "target_column_types": target_column_types,
 
-        "relationships": common_columns,
+        "primary_keys": primary_keys,
+
+        "relationships": relationship_metadata,
 
         "source_rows": len(source_df),
 
@@ -275,4 +292,5 @@ def generate_report(source_file, target_file):
         "target_table": target_table,
 
         "tables": tables
+        
     }
