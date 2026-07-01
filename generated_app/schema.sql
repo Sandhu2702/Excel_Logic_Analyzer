@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS payroll_data (
     performance_grade TEXT,
     promotion TEXT,
     reward TEXT,
-    experience_level TEXT
+    experience_level TEXT,
+    FOREIGN KEY (employee_id) REFERENCES employee_master(employee_id)
 );
 

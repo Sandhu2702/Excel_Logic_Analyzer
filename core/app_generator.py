@@ -17,6 +17,11 @@ def generate_database_schema(report, output_dir):
 
     schema_sql = ""
 
+    relationships = report.get(
+        "relationships",
+        []
+    )
+
     for table in report["tables"]:
 
         table_name = table["table_name"]
@@ -47,6 +52,36 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 
             schema_sql += (
                 f"    {sql_name} {sqlite_type},\n"
+            )
+        
+        for relation in relationships:
+
+            if relation["child_table"] != table_name:
+               continue
+
+            fk_column = (
+               relation["child_key"]
+               .lower()
+               .replace(" ", "_")
+               .replace("%", "percent")
+               .replace("(", "")
+               .replace(")", "")
+            )
+
+            parent_table = relation["parent_table"]
+
+            parent_key = (
+               relation["parent_key"]
+               .lower()
+               .replace(" ", "_")
+               .replace("%", "percent")
+               .replace("(", "")
+               .replace(")", "")
+            )
+
+            schema_sql += (
+               f"    FOREIGN KEY ({fk_column}) "
+               f"REFERENCES {parent_table}({parent_key}),\n"
             )
 
         schema_sql = schema_sql.rstrip(",\n")
@@ -269,6 +304,10 @@ def get_connection():
     )
 
     conn.row_factory = sqlite3.Row
+
+    conn.execute(
+        "PRAGMA foreign_keys = ON"
+    )
 
     return conn
 

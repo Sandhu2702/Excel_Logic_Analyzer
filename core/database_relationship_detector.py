@@ -10,21 +10,12 @@ Version 1:
 - One-to-Many Relationship Detection
 """
 
-from collections import Counter
-
 
 class DatabaseRelationshipDetector:
     """
     Detect primary keys and relationships
     between generated tables.
     """
-
-    PK_KEYWORDS = [
-        "id",
-        "_id",
-        "code",
-        "_code"
-    ]
 
     def __init__(self, tables_data: dict):
         """
@@ -43,24 +34,10 @@ class DatabaseRelationshipDetector:
         self.tables_data = tables_data
 
     # --------------------------------------------------
-    # Public Methods
+    # Primary Key Detection
     # --------------------------------------------------
 
     def detect_primary_keys(self):
-        """
-        Detect likely primary key for each table.
-
-        Returns
-        -------
-        dict
-
-        Example
-        -------
-        {
-            "employee_master": "emp_id",
-            "payroll_data": "payroll_id"
-        }
-        """
 
         primary_keys = {}
 
@@ -80,31 +57,15 @@ class DatabaseRelationshipDetector:
             primary_keys[table_name] = best_column
 
         return primary_keys
-    
+
+    # --------------------------------------------------
+    # Foreign Key Detection
+    # --------------------------------------------------
+
     def detect_foreign_keys(self):
-        """
-        Detect possible foreign key relationships.
-
-        Returns
-        -------
-        list
-
-        Example
-        -------
-        [
-           {
-              "parent_table": "employee_master",
-              "parent_key": "emp_id",
-
-              "child_table": "payroll_data",
-              "child_key": "emp_id",
-
-              "relationship_type": "one_to_many"
-           }
-        ]
-        """
 
         relationships = []
+        seen_relationships = set()
 
         primary_keys = self.detect_primary_keys()
 
@@ -113,73 +74,68 @@ class DatabaseRelationshipDetector:
             parent_df = self.tables_data[parent_table]
 
             if parent_pk not in parent_df.columns:
-               continue
+                continue
 
             parent_values = set(
                 parent_df[parent_pk]
                 .dropna()
                 .astype(str)
-            ) 
+            )
 
             for child_table, child_df in self.tables_data.items():
 
-               # Skip same table
-               if child_table == parent_table:
-                  continue
+                if child_table == parent_table:
+                    continue
 
-               # Check every column in child table
-               for child_column in child_df.columns:
+                for child_column in child_df.columns:
 
-                   # Ignore child's own primary key
-                   if child_column == primary_keys.get(child_table):
-                      continue
+                    if child_column.lower() != parent_pk.lower():
+                        continue
 
-                   # Column names must match initially
-                   if child_column.lower() != parent_pk.lower():
-                      continue
+                    child_values = set(
+                        child_df[child_column]
+                        .dropna()
+                        .astype(str)
+                    )
 
-                   child_values = set(
-                      child_df[child_column]
-                      .dropna()
-                      .astype(str)
-                   )
+                    if not child_values:
+                        continue
 
-                   # Empty column
-                   if not child_values:
-                      continue
+                    if not child_values.issubset(parent_values):
+                        continue
 
-                   # FK validation:
-                   # child values should exist in parent values
-                   if child_values.issubset(parent_values):
+                    relationship_key = tuple(
+                        sorted([parent_table, child_table])
+                    )
 
-                      relationships.append({
-                          "parent_table": parent_table,
-                          "parent_key": parent_pk,
+                    if relationship_key in seen_relationships:
+                        continue
 
-                          "child_table": child_table,
-                          "child_key": child_column,
+                    seen_relationships.add(
+                        relationship_key
+                    )
 
-                          "relationship_type": "one_to_many"
-                      })
+                    relationships.append({
+                        "parent_table": parent_table,
+                        "parent_key": parent_pk,
+                        "child_table": child_table,
+                        "child_key": child_column,
+                        "relationship_type": "one_to_many"
+                    })
 
         return relationships
 
     # --------------------------------------------------
-    # Internal Methods
+    # Column Scoring
     # --------------------------------------------------
 
     def _score_column(self, df, column):
-        """
-        Score a column for primary key suitability.
-        """
 
         score = 0
 
         column_lower = str(column).lower()
 
-        # ----------------------------------
-        # Naming Convention Score
-        # ----------------------------------
+        # Naming convention
 
         if column_lower == "id":
             score += 50
@@ -196,9 +152,7 @@ class DatabaseRelationshipDetector:
         elif "code" in column_lower:
             score += 30
 
-        # ----------------------------------
-        # Uniqueness Score
-        # ----------------------------------
+        # Uniqueness
 
         series = df[column]
 
@@ -206,24 +160,24 @@ class DatabaseRelationshipDetector:
 
         if total_rows > 0:
 
-            unique_count = series.nunique(dropna=True)
+            unique_count = series.nunique(
+                dropna=True
+            )
 
-            uniqueness_ratio = unique_count / total_rows
+            uniqueness_ratio = (
+                unique_count / total_rows
+            )
 
-            score += int(uniqueness_ratio * 30)
+            score += int(
+                uniqueness_ratio * 30
+            )
 
-        # ----------------------------------
-        # Null Score
-        # ----------------------------------
+        # No NULLs
 
-        null_count = series.isna().sum()
-
-        if null_count == 0:
+        if series.isna().sum() == 0:
             score += 20
 
-        # ----------------------------------
-        # First Column Bonus
-        # ----------------------------------
+        # First column bonus
 
         if column == df.columns[0]:
             score += 10
@@ -235,16 +189,23 @@ class DatabaseRelationshipDetector:
     # --------------------------------------------------
 
     def summary(self):
-        """
-        Generate detector summary.
-        """
 
-        primary_keys = self.detect_primary_keys()
-        foreign_keys = self.detect_foreign_keys()
+        primary_keys = (
+            self.detect_primary_keys()
+        )
+
+        relationships = (
+            self.detect_foreign_keys()
+        )
 
         return {
-            "tables_analyzed": len(self.tables_data),
-            "primary_keys_detected": primary_keys,
-            "relationships_detected": len(foreign_keys),
-            "relationships": foreign_keys
+            "tables_analyzed": len(
+                self.tables_data
+            ),
+            "primary_keys_detected":
+                primary_keys,
+            "relationships_detected":
+                len(relationships),
+            "relationships":
+                relationships
         }

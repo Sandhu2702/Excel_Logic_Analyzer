@@ -89,17 +89,42 @@ class Dashboard(ctk.CTkToplevel):
 
         if self.report["relationships"]:
 
-            for rel in self.report["relationships"]:
+           for rel in self.report["relationships"]:
 
-                text += f"• Common Linking Field : {rel}\n"
-                text += (
-                    f"• Source and Target datasets "
-                    f"are connected using {rel}\n"
-                )
-                text += (
-                    "• Relationship Type : "
-                    "One-to-One Record Mapping\n\n"
-                )
+               text += (
+                  f"Parent Table : "
+                  f"{rel['parent_table']}\n"
+               )
+
+               text += (
+                  f"Parent Key   : "
+                  f"{rel['parent_key']}\n\n"
+               )
+
+               text += (
+                  f"Child Table  : "
+                  f"{rel['child_table']}\n"
+               )
+
+               text += (
+                  f"Child Key    : "
+                  f"{rel['child_key']}\n\n"
+               )
+
+               relationship_name = (
+                   rel["relationship_type"]
+                   .replace("_", "-")
+                   .title()
+               )
+
+               text += (
+                  f"Relationship : "
+                  f"{relationship_name}\n"
+               )
+
+               text += (
+                 "\n----------------------------------\n\n"
+               )
 
         else:
 
@@ -160,11 +185,15 @@ class Dashboard(ctk.CTkToplevel):
 
         if self.report["relationships"]:
 
-            for rel in self.report["relationships"]:
-                text += (
-                    f"   • {rel} is a common key used to "
-                    f"link source and target records\n"
-                )
+           for rel in self.report["relationships"]:
+
+              text += (
+                 f"   • {rel['parent_table']}."
+                 f"{rel['parent_key']}"
+                 f" → "
+                 f"{rel['child_table']}."
+                 f"{rel['child_key']}\n"
+              )
 
         else:
 
@@ -248,12 +277,32 @@ class Dashboard(ctk.CTkToplevel):
 
             relation = self.report["relationships"][0]
 
-            text += f"{self.report['source_table']}\n"
-            text += "      |\n"
-            text += f"      | {relation}\n"
-            text += "      |\n"
-            text += "      V\n"
-            text += f"{self.report['target_table']}\n"
+            text += (
+              f"{relation['parent_table']}"
+              f" ({relation['parent_key']})\n"
+            )
+
+            text += "           |\n"
+            text += "           |\n"
+
+            relationship_name = (
+               relation["relationship_type"]
+               .replace("_", "-")
+               .title()
+            )
+
+            text += (
+              f"           | "
+              f"{relationship_name}\n"
+            )
+
+            text += "           |\n"
+            text += "           V\n"
+
+            text += (
+               f"{relation['child_table']}"
+               f" ({relation['child_key']})\n"
+            )
 
         text += "\n\n"
 

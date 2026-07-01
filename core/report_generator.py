@@ -263,6 +263,14 @@ def generate_report(source_file, target_file):
       for col, dtype in target_df.dtypes.items()
     }
 
+    print("\n===== RELATIONSHIP DEBUG =====")
+    print("Primary Keys:")
+    print(primary_keys)
+
+    print("\nRelationships:")
+    print(relationship_metadata)
+    print("==============================\n")
+
     return {
 
         "source_columns": list(source_df.columns),
