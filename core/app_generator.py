@@ -13,6 +13,37 @@ def get_sqlite_type(dtype):
     else:
         return "TEXT"
 
+def build_foreign_key_metadata(report):
+
+    foreign_keys = {}
+
+    relationships = report.get(
+        "relationships",
+        []
+    )
+
+    for rel in relationships:
+
+        if rel.get("relationship_type") != "one_to_many":
+            continue
+
+        child_table = rel["child_table"]
+        child_column = rel["child_key"]
+
+        foreign_keys.setdefault(
+            child_table,
+            {}
+        )
+
+        foreign_keys[child_table][child_column] = {
+            "parent_table": rel["parent_table"],
+            "parent_column": rel["parent_key"],
+            "context_name":
+                f"{rel['parent_table']}_options"
+        }
+
+    return foreign_keys
+
 def generate_database_schema(report, output_dir):
 
     schema_sql = ""
@@ -99,6 +130,13 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 def generate_flask_app(report):
 
     output_dir = "generated_app"
+
+    foreign_key_metadata = (
+        build_foreign_key_metadata(report)
+    )
+
+    print("\nForeign Key Metadata")
+    print(foreign_key_metadata)
 
     os.makedirs(output_dir, exist_ok=True)
 
