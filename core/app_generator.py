@@ -123,7 +123,20 @@ def generate_flask_app(report):
 
 @app.route("/{table_name}")
 def {table_name}():
-    return render_template("{table_name}_list.html")
+
+    conn = get_connection()
+
+    rows = conn.execute(
+        "SELECT * FROM {table_name}"
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "{table_name}_list.html",
+        rows=rows,
+        columns={column_names}
+    )
 
 
 @app.route(
@@ -162,50 +175,50 @@ def add_{table_name}():
     # =====================================
 
     flask_code = f'''
-    from flask import (
-      Flask,
-      render_template,
-      request,
-      redirect,
-      url_for
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for
+)
+import sqlite3
+
+app = Flask(__name__)
+
+def get_connection():
+
+    conn = sqlite3.connect(
+        "database.db"
     )
-    import sqlite3
 
-    app = Flask(__name__)
+    conn.row_factory = sqlite3.Row
 
-    def get_connection():
+    return conn
 
-        conn = sqlite3.connect(
-          "database.db"
-        )
+def init_db():
 
-        conn.row_factory = sqlite3.Row
+    conn = sqlite3.connect("database.db")
 
-        return conn
+    with open("schema.sql", "r", encoding="utf-8") as f:
+        conn.executescript(f.read())
 
-    def init_db():
-
-       conn = sqlite3.connect("database.db")
-
-       with open("schema.sql", "r", encoding="utf-8") as f:
-          conn.executescript(f.read())
-
-       conn.commit()
-       conn.close()
+    conn.commit()
+    conn.close()
 
 
-    @app.route("/")
-    def home():
-       return render_template("index.html")
+@app.route("/")
+def home():
+    return render_template("index.html")
 
-    {routes}
+{routes}
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
 
-        init_db()
+    init_db()
 
-        app.run(debug=True)
-    '''
+    app.run(debug=True)
+'''
 
     with open(
         os.path.join(output_dir, "app.py"),
@@ -317,16 +330,36 @@ def add_{table_name}():
 Add Record
 </a>
 
-<h3>Columns</h3>
+<br><br>
 
-<ul>
-"""
+<table border="1">
 
-        for col in columns:
-            list_html += f"<li>{col}</li>"
+<tr>
+<th>ID</th>
 
-        list_html += """
-</ul>
+{{% for col in columns %}}
+<th>{{{{ col }}}}</th>
+{{% endfor %}}
+
+</tr>
+
+{{% for row in rows %}}
+
+<tr>
+
+<td>{{{{ row["id"] }}}}</td>
+
+{{% for col in columns %}}
+<td>{{{{ row[col] }}}}</td>
+{{% endfor %}}
+
+</tr>
+
+{{% endfor %}}
+
+</table>
+
+<br><br>
 
 <a href="/">
 Back Home

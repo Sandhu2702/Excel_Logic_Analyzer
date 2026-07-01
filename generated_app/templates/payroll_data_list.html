@@ -15,11 +15,36 @@
 Add Record
 </a>
 
-<h3>Columns</h3>
+<br><br>
 
-<ul>
-<li>Employee ID</li><li>Salary</li><li>Performance Score</li><li>Department</li><li>Bonus %</li><li>Bonus Amount</li><li>Scholarship</li><li>Tax</li><li>Net Salary</li><li>Performance Grade</li><li>Promotion</li><li>Reward</li><li>Experience Level</li>
-</ul>
+<table border="1">
+
+<tr>
+<th>ID</th>
+
+{% for col in columns %}
+<th>{{ col }}</th>
+{% endfor %}
+
+</tr>
+
+{% for row in rows %}
+
+<tr>
+
+<td>{{ row["id"] }}</td>
+
+{% for col in columns %}
+<td>{{ row[col] }}</td>
+{% endfor %}
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br><br>
 
 <a href="/">
 Back Home

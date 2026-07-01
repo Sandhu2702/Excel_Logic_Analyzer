@@ -1,3 +1,4 @@
+
 from flask import (
     Flask,
     render_template,
@@ -34,10 +35,24 @@ def init_db():
 def home():
     return render_template("index.html")
 
-    
+
+
 @app.route("/employee_master")
 def employee_master():
-    return render_template("employee_master_list.html")
+
+    conn = get_connection()
+
+    rows = conn.execute(
+        "SELECT * FROM employee_master"
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "employee_master_list.html",
+        rows=rows,
+        columns=['employee_id', 'employee_name', 'department', 'experience_years', 'salary', 'performance_rating', 'attendance_percent', 'certification', 'location']
+    )
 
 
 @app.route(
@@ -73,7 +88,20 @@ def add_employee_master():
 
 @app.route("/payroll_data")
 def payroll_data():
-    return render_template("payroll_data_list.html")
+
+    conn = get_connection()
+
+    rows = conn.execute(
+        "SELECT * FROM payroll_data"
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "payroll_data_list.html",
+        rows=rows,
+        columns=['employee_id', 'salary', 'performance_score', 'department', 'bonus_percent', 'bonus_amount', 'scholarship', 'tax', 'net_salary', 'performance_grade', 'promotion', 'reward', 'experience_level']
+    )
 
 
 @app.route(
@@ -112,4 +140,3 @@ if __name__ == "__main__":
     init_db()
 
     app.run(debug=True)
-    
