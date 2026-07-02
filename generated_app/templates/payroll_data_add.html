@@ -16,10 +16,17 @@
         <label>Employee ID</label>
         <br>
 
-        <input
-        type="text"
-        name="employee_id"
-        >
+        <select name="employee_id">
+
+        {% for item in employee_master_options %}
+
+        <option value="{{ item['employee_id'] }}">
+           {{ item['employee_id'] }}
+        </option>
+
+        {% endfor %}
+
+        </select>
 
         <br><br>
         

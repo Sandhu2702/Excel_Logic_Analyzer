@@ -85,8 +85,15 @@ def add_employee_master():
             url_for("employee_master")
         )
 
+    conn = get_connection()
+
+
+
+    conn.close()
+
     return render_template(
        "employee_master_add.html"
+       
     )
 
 
@@ -141,11 +148,14 @@ def edit_employee_master(id):
         (id,)
     ).fetchone()
 
+    
+
     conn.close()
 
     return render_template(
         "employee_master_edit.html",
         row=row
+        
     )
 
 
@@ -193,8 +203,21 @@ def add_payroll_data():
             url_for("payroll_data")
         )
 
+    conn = get_connection()
+
+
+    employee_master_options = conn.execute(
+        "SELECT employee_id FROM employee_master"
+    ).fetchall()
+
+
+    conn.close()
+
     return render_template(
        "payroll_data_add.html"
+       ,
+        employee_master_options=employee_master_options
+
     )
 
 
@@ -249,11 +272,20 @@ def edit_payroll_data(id):
         (id,)
     ).fetchone()
 
+    
+    employee_master_options = conn.execute(
+        "SELECT employee_id FROM employee_master"
+    ).fetchall()
+
+
     conn.close()
 
     return render_template(
         "payroll_data_edit.html",
         row=row
+        ,
+        employee_master_options=employee_master_options
+
     )
 
 

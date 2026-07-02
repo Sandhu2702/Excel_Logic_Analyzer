@@ -165,6 +165,40 @@ def generate_flask_app(report):
 
         table_name = table["table_name"]
 
+        fk_fields = foreign_key_metadata.get(
+            table_name,
+            {}
+        )
+
+        parent_queries = ""
+
+        template_context = ""
+
+        for fk_column, fk_info in fk_fields.items():
+
+            parent_table = fk_info["parent_table"]
+
+            parent_column = (
+                fk_info["parent_column"]
+                .lower()
+                .replace(" ", "_")
+                .replace("%", "percent")
+                .replace("(", "")
+                .replace(")", "")
+            )
+
+            context_name = fk_info["context_name"]
+
+            parent_queries += f"""
+    {context_name} = conn.execute(
+        "SELECT {parent_column} FROM {parent_table}"
+    ).fetchall()
+"""
+
+            template_context += f""",
+        {context_name}={context_name}
+"""
+
         column_names = []
 
         for column in table["columns"]:
@@ -256,8 +290,15 @@ def add_{table_name}():
             url_for("{table_name}")
         )
 
+    conn = get_connection()
+
+{parent_queries}
+
+    conn.close()
+
     return render_template(
        "{table_name}_add.html"
+       {template_context}
     )
 
 
@@ -312,11 +353,14 @@ def edit_{table_name}(id):
         (id,)
     ).fetchone()
 
+    {parent_queries}
+
     conn.close()
 
     return render_template(
         "{table_name}_edit.html",
         row=row
+        {template_context}
     )
 """
     # =====================================
@@ -456,6 +500,11 @@ if __name__ == "__main__":
 
         columns = table["columns"]
 
+        fk_fields = foreign_key_metadata.get(
+            table_name,
+            {}
+        )
+
         display_name = (
             table_name
             .replace("_", " ")
@@ -579,15 +628,51 @@ Back Home
 
         for col in columns:
 
-          sql_name = (
-             col.lower()
-             .replace(" ", "_")
-             .replace("%", "percent")
-             .replace("(", "")
-             .replace(")", "")
-          )
+           sql_name = (
+               col.lower()
+               .replace(" ", "_")
+               .replace("%", "percent")
+               .replace("(", "")
+               .replace(")", "")
+           )
 
-          add_html += f"""
+           if col in fk_fields:
+
+               context_name = (
+                   fk_fields[col]["context_name"]
+               )
+
+               parent_column = (
+                   fk_fields[col]["parent_column"]
+                   .lower()
+                   .replace(" ", "_")
+                   .replace("%", "percent")
+                   .replace("(", "")
+                   .replace(")", "")
+               )
+
+               add_html += f"""
+        <label>{col}</label>
+        <br>
+
+        <select name="{sql_name}">
+
+        {{% for item in {context_name} %}}
+
+        <option value="{{{{ item['{parent_column}'] }}}}">
+           {{{{ item['{parent_column}'] }}}}
+        </option>
+
+        {{% endfor %}}
+
+        </select>
+
+        <br><br>
+        """
+
+           else:
+
+              add_html += f"""
         <label>{col}</label>
         <br>
 
@@ -646,27 +731,71 @@ Back Home
 
         for col in columns:
 
-            sql_name = (
+           sql_name = (
               col.lower()
               .replace(" ", "_")
               .replace("%", "percent")
               .replace("(", "")
               .replace(")", "")
-            )
+           )
 
-            edit_html += f"""
-<label>{col}</label>
+           if col in fk_fields:
 
-<br>
+              context_name = (
+                fk_fields[col]["context_name"]
+              )
 
-<input
-type="text"
-name="{sql_name}"
-value="{{{{ row['{sql_name}'] }}}}"
->
+              parent_column = (
+                  fk_fields[col]["parent_column"]
+                  .lower()
+                  .replace(" ", "_")
+                  .replace("%", "percent")
+                  .replace("(", "")
+                  .replace(")", "")
+              )
 
-<br><br>
-"""
+              edit_html += f"""
+        <label>{col}</label>
+
+        <br>
+
+        <select name="{sql_name}">
+
+        {{% for item in {context_name} %}}
+
+        <option
+        value="{{{{ item['{parent_column}'] }}}}"
+
+        {{% if row['{sql_name}'] == item['{parent_column}'] %}}
+        selected
+        {{% endif %}}
+
+        >
+        {{{{ item['{parent_column}'] }}}}
+        </option>
+
+        {{% endfor %}}
+
+        </select>
+
+        <br><br>
+        """
+
+           else:
+
+               edit_html += f"""
+        <label>{col}</label>
+
+        <br>
+
+        <input
+        type="text"
+        name="{sql_name}"
+        value="{{{{ row['{sql_name}'] }}}}"
+        >
+
+        <br><br>
+        """
 
         edit_html += """
 <button type="submit">

@@ -13,162 +13,175 @@
 
 <form method="POST">
 
-<label>Employee ID</label>
+        <label>Employee ID</label>
 
-<br>
+        <br>
 
-<input
-type="text"
-name="employee_id"
-value="{{ row['employee_id'] }}"
->
+        <select name="employee_id">
 
-<br><br>
+        {% for item in employee_master_options %}
 
-<label>Salary</label>
+        <option
+        value="{{ item['employee_id'] }}"
 
-<br>
+        {% if row['employee_id'] == item['employee_id'] %}
+        selected
+        {% endif %}
 
-<input
-type="text"
-name="salary"
-value="{{ row['salary'] }}"
->
+        >
+        {{ item['employee_id'] }}
+        </option>
 
-<br><br>
+        {% endfor %}
 
-<label>Performance Score</label>
+        </select>
 
-<br>
+        <br><br>
+        
+        <label>Salary</label>
 
-<input
-type="text"
-name="performance_score"
-value="{{ row['performance_score'] }}"
->
+        <br>
 
-<br><br>
+        <input
+        type="text"
+        name="salary"
+        value="{{ row['salary'] }}"
+        >
 
-<label>Department</label>
+        <br><br>
+        
+        <label>Performance Score</label>
 
-<br>
+        <br>
 
-<input
-type="text"
-name="department"
-value="{{ row['department'] }}"
->
+        <input
+        type="text"
+        name="performance_score"
+        value="{{ row['performance_score'] }}"
+        >
 
-<br><br>
+        <br><br>
+        
+        <label>Department</label>
 
-<label>Bonus %</label>
+        <br>
 
-<br>
+        <input
+        type="text"
+        name="department"
+        value="{{ row['department'] }}"
+        >
 
-<input
-type="text"
-name="bonus_percent"
-value="{{ row['bonus_percent'] }}"
->
+        <br><br>
+        
+        <label>Bonus %</label>
 
-<br><br>
+        <br>
 
-<label>Bonus Amount</label>
+        <input
+        type="text"
+        name="bonus_percent"
+        value="{{ row['bonus_percent'] }}"
+        >
 
-<br>
+        <br><br>
+        
+        <label>Bonus Amount</label>
 
-<input
-type="text"
-name="bonus_amount"
-value="{{ row['bonus_amount'] }}"
->
+        <br>
 
-<br><br>
+        <input
+        type="text"
+        name="bonus_amount"
+        value="{{ row['bonus_amount'] }}"
+        >
 
-<label>Scholarship</label>
+        <br><br>
+        
+        <label>Scholarship</label>
 
-<br>
+        <br>
 
-<input
-type="text"
-name="scholarship"
-value="{{ row['scholarship'] }}"
->
+        <input
+        type="text"
+        name="scholarship"
+        value="{{ row['scholarship'] }}"
+        >
 
-<br><br>
+        <br><br>
+        
+        <label>Tax</label>
 
-<label>Tax</label>
+        <br>
 
-<br>
+        <input
+        type="text"
+        name="tax"
+        value="{{ row['tax'] }}"
+        >
 
-<input
-type="text"
-name="tax"
-value="{{ row['tax'] }}"
->
+        <br><br>
+        
+        <label>Net Salary</label>
 
-<br><br>
+        <br>
 
-<label>Net Salary</label>
+        <input
+        type="text"
+        name="net_salary"
+        value="{{ row['net_salary'] }}"
+        >
 
-<br>
+        <br><br>
+        
+        <label>Performance Grade</label>
 
-<input
-type="text"
-name="net_salary"
-value="{{ row['net_salary'] }}"
->
+        <br>
 
-<br><br>
+        <input
+        type="text"
+        name="performance_grade"
+        value="{{ row['performance_grade'] }}"
+        >
 
-<label>Performance Grade</label>
+        <br><br>
+        
+        <label>Promotion</label>
 
-<br>
+        <br>
 
-<input
-type="text"
-name="performance_grade"
-value="{{ row['performance_grade'] }}"
->
+        <input
+        type="text"
+        name="promotion"
+        value="{{ row['promotion'] }}"
+        >
 
-<br><br>
+        <br><br>
+        
+        <label>Reward</label>
 
-<label>Promotion</label>
+        <br>
 
-<br>
+        <input
+        type="text"
+        name="reward"
+        value="{{ row['reward'] }}"
+        >
 
-<input
-type="text"
-name="promotion"
-value="{{ row['promotion'] }}"
->
+        <br><br>
+        
+        <label>Experience Level</label>
 
-<br><br>
+        <br>
 
-<label>Reward</label>
+        <input
+        type="text"
+        name="experience_level"
+        value="{{ row['experience_level'] }}"
+        >
 
-<br>
-
-<input
-type="text"
-name="reward"
-value="{{ row['reward'] }}"
->
-
-<br><br>
-
-<label>Experience Level</label>
-
-<br>
-
-<input
-type="text"
-name="experience_level"
-value="{{ row['experience_level'] }}"
->
-
-<br><br>
-
+        <br><br>
+        
 <button type="submit">
 Update
 </button>
