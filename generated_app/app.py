@@ -69,6 +69,10 @@ def add_employee_master():
 
         conn = get_connection()
 
+
+
+ 
+
         conn.execute(
             """
             INSERT INTO employee_master
@@ -126,22 +130,26 @@ def edit_employee_master(id):
     conn = get_connection()
 
     if request.method == "POST":
+    
 
-       conn.execute(
+
+
+
+        conn.execute(
            """
            UPDATE employee_master
            SET employee_id=?, employee_name=?, department=?, experience_years=?, salary=?, performance_rating=?, attendance_percent=?, certification=?, location=?
            WHERE id = ?
            """,
            (request.form.get("employee_id"), request.form.get("employee_name"), request.form.get("department"), request.form.get("experience_years"), request.form.get("salary"), request.form.get("performance_rating"), request.form.get("attendance_percent"), request.form.get("certification"), request.form.get("location"), id)
-       )
+        )
 
-       conn.commit()
-       conn.close()
+        conn.commit()
+        conn.close()
 
-       return redirect(
-          url_for("employee_master")
-       )
+        return redirect(
+            url_for("employee_master")
+        )
 
     row = conn.execute(
         "SELECT * FROM employee_master WHERE id = ?",
@@ -187,13 +195,22 @@ def add_payroll_data():
 
         conn = get_connection()
 
+        salary = float(request.form.get("salary") or 0)
+        bonus_percent = float(request.form.get("bonus_percent") or 0)
+        tax = float(request.form.get("tax") or 0)
+
+
+        bonus_amount = (salary * bonus_percent / 100)
+        net_salary = (salary + bonus_amount - tax)
+ 
+
         conn.execute(
             """
             INSERT INTO payroll_data
             (employee_id, salary, performance_score, department, bonus_percent, bonus_amount, scholarship, tax, net_salary, performance_grade, promotion, reward, experience_level)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (request.form.get("employee_id"), request.form.get("salary"), request.form.get("performance_score"), request.form.get("department"), request.form.get("bonus_percent"), request.form.get("bonus_amount"), request.form.get("scholarship"), request.form.get("tax"), request.form.get("net_salary"), request.form.get("performance_grade"), request.form.get("promotion"), request.form.get("reward"), request.form.get("experience_level"),)
+            (request.form.get("employee_id"), request.form.get("salary"), request.form.get("performance_score"), request.form.get("department"), request.form.get("bonus_percent"), bonus_amount, request.form.get("scholarship"), request.form.get("tax"), net_salary, request.form.get("performance_grade"), request.form.get("promotion"), request.form.get("reward"), request.form.get("experience_level"),)
         )
 
         conn.commit()
@@ -250,22 +267,31 @@ def edit_payroll_data(id):
     conn = get_connection()
 
     if request.method == "POST":
+    
+        salary = float(request.form.get("salary") or 0)
+        bonus_percent = float(request.form.get("bonus_percent") or 0)
+        tax = float(request.form.get("tax") or 0)
 
-       conn.execute(
+
+        bonus_amount = (salary * bonus_percent / 100)
+        net_salary = (salary + bonus_amount - tax)
+
+
+        conn.execute(
            """
            UPDATE payroll_data
            SET employee_id=?, salary=?, performance_score=?, department=?, bonus_percent=?, bonus_amount=?, scholarship=?, tax=?, net_salary=?, performance_grade=?, promotion=?, reward=?, experience_level=?
            WHERE id = ?
            """,
-           (request.form.get("employee_id"), request.form.get("salary"), request.form.get("performance_score"), request.form.get("department"), request.form.get("bonus_percent"), request.form.get("bonus_amount"), request.form.get("scholarship"), request.form.get("tax"), request.form.get("net_salary"), request.form.get("performance_grade"), request.form.get("promotion"), request.form.get("reward"), request.form.get("experience_level"), id)
-       )
+           (request.form.get("employee_id"), request.form.get("salary"), request.form.get("performance_score"), request.form.get("department"), request.form.get("bonus_percent"), bonus_amount, request.form.get("scholarship"), request.form.get("tax"), net_salary, request.form.get("performance_grade"), request.form.get("promotion"), request.form.get("reward"), request.form.get("experience_level"), id)
+        )
 
-       conn.commit()
-       conn.close()
+        conn.commit()
+        conn.close()
 
-       return redirect(
-          url_for("payroll_data")
-       )
+        return redirect(
+            url_for("payroll_data")
+        )
 
     row = conn.execute(
         "SELECT * FROM payroll_data WHERE id = ?",

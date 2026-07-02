@@ -135,6 +135,22 @@ def generate_flask_app(report):
         build_foreign_key_metadata(report)
     )
 
+    business_rule_metadata = report.get(
+       "business_rule_metadata",
+       []
+    )
+
+    calculated_fields = {}
+
+    for rule in business_rule_metadata:
+
+        if rule["type"] != "calculation":
+           continue
+
+        calculated_fields[
+           rule["target_field"]
+        ] = rule
+
     print("\nForeign Key Metadata")
     print(foreign_key_metadata)
 
@@ -165,6 +181,22 @@ def generate_flask_app(report):
 
         table_name = table["table_name"]
 
+        column_names = []
+
+        for column in table["columns"]:
+
+            sql_name = (
+               column.lower()
+               .replace(" ", "_")
+               .replace("%", "percent")
+               .replace("(", "")
+               .replace(")", "")
+            )
+
+            column_names.append(sql_name)
+
+        table_columns = set(column_names)
+
         fk_fields = foreign_key_metadata.get(
             table_name,
             {}
@@ -173,6 +205,59 @@ def generate_flask_app(report):
         parent_queries = ""
 
         template_context = ""
+
+        variable_loading_code = ""
+
+        loaded_fields = set()
+
+        calculated_field_names = {
+           rule["target_field"]
+           for rule in business_rule_metadata
+           if rule["type"] == "calculation"
+        }
+
+        for rule in business_rule_metadata:
+
+            if rule["target_field"] not in table_columns:
+                continue
+
+            for field in rule["source_fields"]:
+
+                if field in calculated_field_names:
+                    continue
+
+                if field in loaded_fields:
+                    continue
+
+                loaded_fields.add(field)
+
+                variable_loading_code += (
+    f'        {field} = float('
+    f'request.form.get("{field}") or 0)\n'
+)
+
+        calculation_code = ""
+
+        for rule in business_rule_metadata:
+
+          if rule["target_field"] not in table_columns:
+             continue
+
+          if rule["type"] != "calculation":
+             continue
+
+          calculation_code += (
+    f'        {rule["target_field"]} = '
+    f'({rule["formula"]})\n'
+)
+           
+        print("\n=== VARIABLE LOADING CODE ===")
+        print(variable_loading_code)
+        print("============================\n")
+
+        print("\n=== GENERATED CALCULATION CODE ===")
+        print(calculation_code)
+        print("=================================\n")
 
         for fk_column, fk_info in fk_fields.items():
 
@@ -199,31 +284,26 @@ def generate_flask_app(report):
         {context_name}={context_name}
 """
 
-        column_names = []
-
-        for column in table["columns"]:
-
-            sql_name = (
-               column.lower()
-               .replace(" ", "_")
-               .replace("%", "percent")
-               .replace("(", "")
-               .replace(")", "")
-            )
-
-            column_names.append(sql_name)
-
         columns_sql = ", ".join(column_names)
 
         placeholders = ", ".join(
            ["?"] * len(column_names)
         )
 
+        form_values_list = []
+
+        for col in column_names:
+
+            if col in calculated_fields:
+               form_values_list.append(col)
+
+            else:
+                form_values_list.append(
+                    f'request.form.get("{col}")'
+                )
+
         form_values = ", ".join(
-            [
-               f'request.form.get("{col}")'
-               for col in column_names
-            ]
+           form_values_list
         )
 
         update_values = ", ".join(
@@ -237,11 +317,20 @@ def generate_flask_app(report):
            [f"{col}=?" for col in column_names]
         )
 
+        update_params_list = []
+
+        for col in column_names:
+
+            if col in calculated_fields:
+               update_params_list.append(col)
+
+            else:
+               update_params_list.append(
+                  f'request.form.get("{col}")'
+               )
+
         update_params = ", ".join(
-          [
-            f'request.form.get("{col}")'
-            for col in column_names
-          ]
+            update_params_list
         )
 
         routes += f"""
@@ -273,6 +362,10 @@ def add_{table_name}():
     if request.method == "POST":
 
         conn = get_connection()
+
+{variable_loading_code}
+
+{calculation_code} 
 
         conn.execute(
             \"\"\"
@@ -331,22 +424,26 @@ def edit_{table_name}(id):
     conn = get_connection()
 
     if request.method == "POST":
+    
+{variable_loading_code}
 
-       conn.execute(
+{calculation_code}
+
+        conn.execute(
            \"\"\"
            UPDATE {table_name}
            SET {update_sql}
            WHERE id = ?
            \"\"\",
            ({update_params}, id)
-       )
+        )
 
-       conn.commit()
-       conn.close()
+        conn.commit()
+        conn.close()
 
-       return redirect(
-          url_for("{table_name}")
-       )
+        return redirect(
+            url_for("{table_name}")
+        )
 
     row = conn.execute(
         "SELECT * FROM {table_name} WHERE id = ?",
@@ -503,6 +600,10 @@ if __name__ == "__main__":
         fk_fields = foreign_key_metadata.get(
             table_name,
             {}
+        )
+
+        table_calculated_fields = (
+            calculated_fields
         )
 
         display_name = (
@@ -672,17 +773,23 @@ Back Home
 
            else:
 
-              add_html += f"""
-        <label>{col}</label>
-        <br>
+               readonly_attr = ""
 
-        <input
-        type="text"
-        name="{sql_name}"
-        >
+               if sql_name in table_calculated_fields:
+                  readonly_attr = "readonly"
 
-        <br><br>
-        """
+               add_html += f"""
+           <label>{col}</label>
+           <br>
+
+           <input
+           type="text"
+           name="{sql_name}"
+           {readonly_attr}
+           >
+
+           <br><br>
+           """
 
         add_html += """
 <button type="submit">
@@ -783,19 +890,25 @@ Back Home
 
            else:
 
+               readonly_attr = ""
+
+               if sql_name in table_calculated_fields:
+                   readonly_attr = "readonly"
+
                edit_html += f"""
-        <label>{col}</label>
+           <label>{col}</label>
 
-        <br>
+           <br>
 
-        <input
-        type="text"
-        name="{sql_name}"
-        value="{{{{ row['{sql_name}'] }}}}"
-        >
+           <input
+           type="text"
+           name="{sql_name}"
+           value="{{{{ row['{sql_name}'] }}}}"
+           {readonly_attr}
+           >
 
-        <br><br>
-        """
+           <br><br>
+           """
 
         edit_html += """
 <button type="submit">

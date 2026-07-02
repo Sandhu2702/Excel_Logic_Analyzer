@@ -1,4 +1,7 @@
 import pandas as pd
+from core.business_rule_detector import (
+    BusinessRuleDetector
+)
 
 
 def generate_report(source_file, target_file):
@@ -253,6 +256,23 @@ def generate_report(source_file, target_file):
         detector.detect_foreign_keys()
     )
 
+    # ==========================================
+    # Business Rule Metadata
+    # ==========================================
+
+    rule_detector = BusinessRuleDetector(
+        source_df,
+        target_df
+    )
+
+    business_rule_metadata = (
+        rule_detector.detect_rules()
+    )
+
+    print("\n===== BUSINESS RULES =====")
+    print(business_rule_metadata)
+    print("==========================\n")
+
     source_column_types = {
       col: str(dtype)
       for col, dtype in source_df.dtypes.items()
@@ -292,6 +312,8 @@ def generate_report(source_file, target_file):
         "application_type": application_type,
 
         "business_rules": business_rules,
+
+        "business_rule_metadata": business_rule_metadata,
 
         "modules": modules,
 
