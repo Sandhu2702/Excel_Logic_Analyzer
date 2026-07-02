@@ -148,7 +148,7 @@ def edit_employee_master(id):
         conn.close()
 
         return redirect(
-            url_for("employee_master")
+           url_for("employee_master")
         )
 
     row = conn.execute(
@@ -290,7 +290,7 @@ def edit_payroll_data(id):
         conn.close()
 
         return redirect(
-            url_for("payroll_data")
+           url_for("payroll_data")
         )
 
     row = conn.execute(

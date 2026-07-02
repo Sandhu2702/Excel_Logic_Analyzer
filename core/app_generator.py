@@ -442,7 +442,7 @@ def edit_{table_name}(id):
         conn.close()
 
         return redirect(
-            url_for("{table_name}")
+           url_for("{table_name}")
         )
 
     row = conn.execute(
@@ -606,6 +606,28 @@ if __name__ == "__main__":
             calculated_fields
         )
 
+    js_calculation_code = ""
+
+    for rule in business_rule_metadata:
+
+        if rule["type"] != "calculation":
+            continue
+
+        formula = rule["formula"]
+
+        for field in rule["source_fields"]:
+
+            formula = formula.replace(
+               field,
+               f'(parseFloat(document.getElementsByName("{field}")[0].value) || 0)'
+            )
+
+        js_calculation_code += f"""
+        document.getElementsByName(
+           "{rule['target_field']}"
+        )[0].value = {formula};
+        """
+
         display_name = (
             table_name
             .replace("_", " ")
@@ -725,6 +747,15 @@ Back Home
 <h1>Add {display_name}</h1>
 
 <form method="POST">
+<script>
+
+function recalculate() {{
+
+{js_calculation_code}
+
+}}
+
+</script>
 """
 
         for col in columns:
@@ -786,6 +817,7 @@ Back Home
            type="text"
            name="{sql_name}"
            {readonly_attr}
+           oninput="recalculate()"
            >
 
            <br><br>

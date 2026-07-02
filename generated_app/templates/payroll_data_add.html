@@ -12,6 +12,23 @@
 <h1>Add Payroll Data</h1>
 
 <form method="POST">
+<script>
+
+function recalculate() {
+
+
+        document.getElementsByName(
+           "bonus_amount"
+        )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) * (parseFloat(document.getElementsByName("bonus_percent")[0].value) || 0) / 100;
+        
+        document.getElementsByName(
+           "net_salary"
+        )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) + (parseFloat(document.getElementsByName("bonus_amount")[0].value) || 0) - (parseFloat(document.getElementsByName("tax")[0].value) || 0);
+        
+
+}
+
+</script>
 
         <label>Employee ID</label>
         <br>
@@ -37,6 +54,7 @@
            type="text"
            name="salary"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -48,6 +66,7 @@
            type="text"
            name="performance_score"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -59,6 +78,7 @@
            type="text"
            name="department"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -70,6 +90,7 @@
            type="text"
            name="bonus_percent"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -81,6 +102,7 @@
            type="text"
            name="bonus_amount"
            readonly
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -92,6 +114,7 @@
            type="text"
            name="scholarship"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -103,6 +126,7 @@
            type="text"
            name="tax"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -114,6 +138,7 @@
            type="text"
            name="net_salary"
            readonly
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -125,6 +150,7 @@
            type="text"
            name="performance_grade"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -136,6 +162,7 @@
            type="text"
            name="promotion"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -147,6 +174,7 @@
            type="text"
            name="reward"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -158,6 +186,7 @@
            type="text"
            name="experience_level"
            
+           oninput="recalculate()"
            >
 
            <br><br>
