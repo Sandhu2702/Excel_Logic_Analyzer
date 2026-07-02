@@ -338,11 +338,29 @@ def generate_flask_app(report):
 @app.route("/{table_name}")
 def {table_name}():
 
+    search = request.args.get(
+        "search",
+        ""
+    )
+
     conn = get_connection()
 
-    rows = conn.execute(
-        "SELECT * FROM {table_name}"
-    ).fetchall()
+    if search:
+
+        rows = conn.execute(
+            "SELECT * FROM {table_name}"
+        ).fetchall()
+
+        rows = [
+            row for row in rows
+            if search.lower() in str(dict(row)).lower()
+        ]
+
+    else:
+
+        rows = conn.execute(
+            "SELECT * FROM {table_name}"
+        ).fetchall()
 
     conn.close()
 
@@ -606,27 +624,27 @@ if __name__ == "__main__":
             calculated_fields
         )
 
-    js_calculation_code = ""
+        js_calculation_code = ""
 
-    for rule in business_rule_metadata:
+        for rule in business_rule_metadata:
 
-        if rule["type"] != "calculation":
-            continue
+            if rule["type"] != "calculation":
+               continue
 
-        formula = rule["formula"]
+            formula = rule["formula"]
 
-        for field in rule["source_fields"]:
+            for field in rule["source_fields"]:
 
-            formula = formula.replace(
-               field,
-               f'(parseFloat(document.getElementsByName("{field}")[0].value) || 0)'
-            )
+               formula = formula.replace(
+                  field,
+                  f'(parseFloat(document.getElementsByName("{field}")[0].value) || 0)'
+               )
 
-        js_calculation_code += f"""
-        document.getElementsByName(
-           "{rule['target_field']}"
-        )[0].value = {formula};
-        """
+            js_calculation_code += f"""
+            document.getElementsByName(
+               "{rule['target_field']}"
+               )[0].value = {formula};
+            """
 
         display_name = (
             table_name
@@ -650,6 +668,22 @@ if __name__ == "__main__":
 <body>
 
 <h1>{display_name}</h1>
+<form method="GET">
+
+<input
+type="text"
+name="search"
+placeholder="Search..."
+value="{{{{ request.args.get('search', '') }}}}"
+>
+
+<button type="submit">
+Search
+</button>
+
+</form>
+
+<br><br>
 
 <a href="/{table_name}/add">
 Add Record

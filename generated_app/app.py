@@ -44,11 +44,29 @@ def home():
 @app.route("/employee_master")
 def employee_master():
 
+    search = request.args.get(
+        "search",
+        ""
+    )
+
     conn = get_connection()
 
-    rows = conn.execute(
-        "SELECT * FROM employee_master"
-    ).fetchall()
+    if search:
+
+        rows = conn.execute(
+            "SELECT * FROM employee_master"
+        ).fetchall()
+
+        rows = [
+            row for row in rows
+            if search.lower() in str(dict(row)).lower()
+        ]
+
+    else:
+
+        rows = conn.execute(
+            "SELECT * FROM employee_master"
+        ).fetchall()
 
     conn.close()
 
@@ -170,11 +188,29 @@ def edit_employee_master(id):
 @app.route("/payroll_data")
 def payroll_data():
 
+    search = request.args.get(
+        "search",
+        ""
+    )
+
     conn = get_connection()
 
-    rows = conn.execute(
-        "SELECT * FROM payroll_data"
-    ).fetchall()
+    if search:
+
+        rows = conn.execute(
+            "SELECT * FROM payroll_data"
+        ).fetchall()
+
+        rows = [
+            row for row in rows
+            if search.lower() in str(dict(row)).lower()
+        ]
+
+    else:
+
+        rows = conn.execute(
+            "SELECT * FROM payroll_data"
+        ).fetchall()
 
     conn.close()
 

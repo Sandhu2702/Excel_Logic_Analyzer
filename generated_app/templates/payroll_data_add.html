@@ -17,14 +17,14 @@
 function recalculate() {
 
 
-        document.getElementsByName(
-           "bonus_amount"
-        )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) * (parseFloat(document.getElementsByName("bonus_percent")[0].value) || 0) / 100;
-        
-        document.getElementsByName(
-           "net_salary"
-        )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) + (parseFloat(document.getElementsByName("bonus_amount")[0].value) || 0) - (parseFloat(document.getElementsByName("tax")[0].value) || 0);
-        
+            document.getElementsByName(
+               "bonus_amount"
+               )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) * (parseFloat(document.getElementsByName("bonus_percent")[0].value) || 0) / 100;
+            
+            document.getElementsByName(
+               "net_salary"
+               )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) + (parseFloat(document.getElementsByName("bonus_amount")[0].value) || 0) - (parseFloat(document.getElementsByName("tax")[0].value) || 0);
+            
 
 }
 

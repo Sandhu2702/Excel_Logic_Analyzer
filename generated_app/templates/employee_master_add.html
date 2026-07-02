@@ -12,6 +12,23 @@
 <h1>Add Employee Master</h1>
 
 <form method="POST">
+<script>
+
+function recalculate() {
+
+
+            document.getElementsByName(
+               "bonus_amount"
+               )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) * (parseFloat(document.getElementsByName("bonus_percent")[0].value) || 0) / 100;
+            
+            document.getElementsByName(
+               "net_salary"
+               )[0].value = (parseFloat(document.getElementsByName("salary")[0].value) || 0) + (parseFloat(document.getElementsByName("bonus_amount")[0].value) || 0) - (parseFloat(document.getElementsByName("tax")[0].value) || 0);
+            
+
+}
+
+</script>
 
            <label>Employee ID</label>
            <br>
@@ -20,6 +37,7 @@
            type="text"
            name="employee_id"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -31,6 +49,7 @@
            type="text"
            name="employee_name"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -42,6 +61,7 @@
            type="text"
            name="department"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -53,6 +73,7 @@
            type="text"
            name="experience_years"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -64,6 +85,7 @@
            type="text"
            name="salary"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -75,6 +97,7 @@
            type="text"
            name="performance_rating"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -86,6 +109,7 @@
            type="text"
            name="attendance_percent"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -97,6 +121,7 @@
            type="text"
            name="certification"
            
+           oninput="recalculate()"
            >
 
            <br><br>
@@ -108,6 +133,7 @@
            type="text"
            name="location"
            
+           oninput="recalculate()"
            >
 
            <br><br>
